@@ -1,0 +1,17 @@
+/* =========================================
+   RADIUS
+   Generated from Figma Variables
+   ========================================= */
+
+:root {
+  --radius-none: 0px;
+  --radius-1: 4px;
+  --radius-2: 8px;
+  --radius-3: 12px;
+  --radius-4: 16px;
+  --radius-5: 20px;
+  --radius-6: 24px;
+  --radius-7: 32px;
+  --radius-8: 40px;
+  --radius-full: 999px;
+}
