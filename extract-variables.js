@@ -1,7 +1,4 @@
 import fs from "fs";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 const FIGMA_TOKEN = process.env.FIGMA_TOKEN;
 const FIGMA_FILE_KEY = process.env.FIGMA_FILE_KEY;
