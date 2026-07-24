@@ -5,7 +5,7 @@ const FIGMA_FILE_KEY = process.env.FIGMA_FILE_KEY;
 
 if (!FIGMA_TOKEN || !FIGMA_FILE_KEY) {
     console.error(
-        "Missing FIGMA_TOKEN or FIGMA_FILE_KEY in .env"
+        "Missing FIGMA_TOKEN or FIGMA_FILE_KEY in environment"
     );
     process.exit(1);
 }
