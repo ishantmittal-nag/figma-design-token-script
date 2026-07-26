@@ -9,23 +9,6 @@
   --stroke-2: 2px;
   --stroke-3: 3px;
 }
-:root {
-  --text-primary: rgba(0, 0, 0, 1);
-  --text-secondary: rgba(127, 127, 127, 1);
-  --background-primary: rgba(255, 255, 255, 1);
-  --border-strong: rgba(229, 229, 229, 1);
-  --text-on-menu: rgba(255, 255, 255, 1);
-  --background-menu: rgba(28, 28, 28, 1);
-}
-
-[data-theme="dark"] {
-  --text-primary: rgba(255, 255, 255, 1);
-  --text-secondary: rgba(179, 179, 179, 1);
-  --background-primary: rgba(44, 44, 44, 1);
-  --border-strong: rgba(71, 71, 71, 1);
-  --text-on-menu: rgba(255, 255, 255, 1);
-  --background-menu: rgba(28, 28, 28, 1);
-}
 
 [data-theme="mode-1"] {
   --blue-50: rgba(240, 248, 255, 1);
@@ -51,4 +34,21 @@
   --secondary-secondary-400: rgba(194, 205, 214, 1);
   --secondary-secondary-100: rgba(231, 235, 239, 1);
   --secondary-secondary: rgba(170, 185, 197, 1);
+}
+:root {
+  --text-primary: rgba(0, 0, 0, 1);
+  --text-secondary: rgba(127, 127, 127, 1);
+  --background-primary: rgba(255, 255, 255, 1);
+  --border-strong: rgba(229, 229, 229, 1);
+  --text-on-menu: rgba(255, 255, 255, 1);
+  --background-menu: rgba(28, 28, 28, 1);
+}
+
+[data-theme="dark"] {
+  --text-primary: rgba(255, 255, 255, 1);
+  --text-secondary: rgba(179, 179, 179, 1);
+  --background-primary: rgba(44, 44, 44, 1);
+  --border-strong: rgba(71, 71, 71, 1);
+  --text-on-menu: rgba(255, 255, 255, 1);
+  --background-menu: rgba(28, 28, 28, 1);
 }
