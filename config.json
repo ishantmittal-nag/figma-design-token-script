@@ -1,0 +1,38 @@
+{
+  "environment": {
+    "figmaTokenVar": "FIGMA_TOKEN",
+    "figmaFileKeyVar": "FIGMA_FILE_KEY"
+  },
+  "paths": {
+    "outputDir": "./tokens",
+    "snapshotDir": "./tokens/snapshots",
+    "latestJsonFile": "./tokens/variables-latest.json",
+    "latestCssDir": "./tokens/latest"
+  },
+  "naming": {
+    "snapshotFormat": "{timestamp}_{version}",
+    "cssFilePrefix": "",
+    "cssCategoryFiles": true
+  },
+  "css": {
+    "generateIndexCss": true,
+    "groupByCategory": true,
+    "categories": [
+      "colors",
+      "spacing",
+      "radius",
+      "typography",
+      "shadows",
+      "other"
+    ]
+  },
+  "figma": {
+    "apiBaseUrl": "https://api.figma.com/v1"
+  },
+  "github": {
+    "prTitle": "chore: design tokens sync",
+    "prBranchPrefix": "design-tokens/",
+    "prLabels": ["design-tokens", "automated"],
+    "commitMessage": "chore: sync design tokens from Figma"
+  }
+}

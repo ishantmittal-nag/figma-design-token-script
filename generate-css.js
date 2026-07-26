@@ -35,36 +35,100 @@ function figmaColorToCSS(color) {
 
 
 // Convert Figma variable value to CSS
-function convertValue(value, resolvedType) {
+function convertValue(
+    value,
+    resolvedType,
+    variables
+) {
 
-    // COLOR
-    if (resolvedType === "COLOR") {
-        return figmaColorToCSS(value);
+    // ------------------------------------------
+    // Figma Variable Alias
+    // ------------------------------------------
+
+    if (
+        value &&
+        typeof value === "object" &&
+        value.type === "VARIABLE_ALIAS"
+    ) {
+
+        const referencedVariable =
+            variables[value.id];
+
+        if (!referencedVariable) {
+
+            console.warn(
+                `Referenced variable not found: ${value.id}`
+            );
+
+            return "initial";
+        }
+
+        const referencedCSSName =
+            `--${toKebabCase(
+                referencedVariable.name
+            )}`;
+
+        return `var(${referencedCSSName})`;
     }
 
+
+    // ------------------------------------------
+    // COLOR
+    // ------------------------------------------
+
+    if (resolvedType === "COLOR") {
+
+        return figmaColorToCSS(
+            value
+        );
+    }
+
+
+    // ------------------------------------------
     // FLOAT
+    // ------------------------------------------
+
     if (resolvedType === "FLOAT") {
-        if (typeof value === "number") {
+
+        if (
+            typeof value === "number"
+        ) {
+
             return `${value}px`;
         }
 
         return value;
     }
 
+
+    // ------------------------------------------
     // STRING
+    // ------------------------------------------
+
     if (resolvedType === "STRING") {
+
         return `"${value}"`;
     }
 
+
+    // ------------------------------------------
     // BOOLEAN
+    // ------------------------------------------
+
     if (resolvedType === "BOOLEAN") {
-        return value ? "true" : "false";
+
+        return value
+            ? "true"
+            : "false";
     }
 
-    // Fallback
+
+    // ------------------------------------------
+    // FALLBACK
+    // ------------------------------------------
+
     return String(value);
 }
-
 
 // --------------------------------------------------
 // Determine CSS File
@@ -205,10 +269,11 @@ for (const variable of Object.values(variables)) {
             `--${toKebabCase(variable.name)}`;
 
         const cssValue =
-            convertValue(
-                value,
-                variable.resolvedType
-            );
+    convertValue(
+        value,
+        variable.resolvedType,
+        variables
+    );
 
         cssFiles[category].push({
             cssName,

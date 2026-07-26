@@ -1,11 +1,21 @@
+
 import fs from "fs";
+import dotenv from "dotenv";
+
+// Load variables from .env if it exists.
+// In GitHub Actions, environment variables provided by
+// GitHub Secrets will already be available in process.env.
+dotenv.config();
 
 const FIGMA_TOKEN = process.env.FIGMA_TOKEN;
 const FIGMA_FILE_KEY = process.env.FIGMA_FILE_KEY;
 
 if (!FIGMA_TOKEN || !FIGMA_FILE_KEY) {
     console.error(
-        "Missing FIGMA_TOKEN or FIGMA_FILE_KEY in environment"
+        "Missing FIGMA_TOKEN or FIGMA_FILE_KEY."
+    );
+    console.error(
+        "Set them in your .env file locally or provide them as GitHub Actions secrets."
     );
     process.exit(1);
 }
