@@ -50,6 +50,7 @@ const LATEST_JSON = config.paths.latestJsonFile;
 const LATEST_CSS_DIR = config.paths.latestCssDir;
 
 const API_BASE_URL = config.figma.apiBaseUrl;
+const CSS_UNITS = config.css?.units || {};
 
 // ==================================================
 // Validate Environment
@@ -149,7 +150,23 @@ function figmaColorToCSS(color) {
 // Convert Figma Variable Value to CSS
 // ==================================================
 
-function convertValue(value, resolvedType) {
+function convertValue(value, resolvedType, variables, category) {
+    // VARIABLE_ALIAS – reference another CSS variable
+    if (
+        value &&
+        typeof value === "object" &&
+        value.type === "VARIABLE_ALIAS"
+    ) {
+        const referencedVariable = variables?.[value.id];
+
+        if (!referencedVariable) {
+            console.warn(`Referenced variable not found: ${value.id}`);
+            return "initial";
+        }
+
+        return `var(--${toKebabCase(referencedVariable.name)})`;
+    }
+
     // COLOR
     if (resolvedType === "COLOR") {
         return figmaColorToCSS(value);
@@ -158,7 +175,8 @@ function convertValue(value, resolvedType) {
     // FLOAT
     if (resolvedType === "FLOAT") {
         if (typeof value === "number") {
-            return `${value}px`;
+            const unit = CSS_UNITS[category] || "px";
+            return `${value}${unit}`;
         }
         return value;
     }
@@ -394,7 +412,7 @@ function generateCSSTokens(variables, variableCollections) {
             const cssName = `--${toKebabCase(variable.name)}`;
 
             // CSS variable value
-            const cssValue = convertValue(value, variable.resolvedType);
+            const cssValue = convertValue(value, variable.resolvedType, variables, category);
 
             cssFiles[category].push({
                 cssName,
