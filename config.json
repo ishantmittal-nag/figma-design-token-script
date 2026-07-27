@@ -24,7 +24,13 @@
       "typography",
       "shadows",
       "other"
-    ]
+    ],
+    "units": {
+      "spacing": "rem",
+      "radius": "px",
+      "typography": "px",
+      "other": "px"
+    }
   },
   "figma": {
     "apiBaseUrl": "https://api.figma.com/v1"

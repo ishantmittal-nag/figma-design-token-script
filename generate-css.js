@@ -4,6 +4,16 @@ import path from "path";
 const INPUT_FILE = "./variables.json";
 const OUTPUT_DIR = "./tokens";
 
+// Load config for CSS unit mapping
+let config;
+try {
+    config = JSON.parse(fs.readFileSync("./config.json", "utf-8"));
+} catch {
+    config = { css: { units: {} } };
+}
+
+const CSS_UNITS = config.css?.units || {};
+
 // --------------------------------------------------
 // Utility Functions
 // --------------------------------------------------
@@ -38,7 +48,8 @@ function figmaColorToCSS(color) {
 function convertValue(
     value,
     resolvedType,
-    variables
+    variables,
+    category
 ) {
 
     // ------------------------------------------
@@ -94,7 +105,9 @@ function convertValue(
             typeof value === "number"
         ) {
 
-            return `${value}px`;
+            const unit = CSS_UNITS[category] || "px";
+
+            return `${value}${unit}`;
         }
 
         return value;
@@ -272,7 +285,8 @@ for (const variable of Object.values(variables)) {
     convertValue(
         value,
         variable.resolvedType,
-        variables
+        variables,
+        category
     );
 
         cssFiles[category].push({
