@@ -44,9 +44,20 @@ jobs:
       - name: Check for changes
         id: check-changes
         run: |
-          if git diff --quiet; then
-            echo "has_changes=false" >> $GITHUB_OUTPUT
+          # Gate on the diff summary the script itself computed, not a raw
+          # `git diff`: tokens/diff-latest.json's own timestamp field and a
+          # freshly-created tokens/snapshots/ entry make the working tree
+          # differ on every run even when zero tokens actually changed,
+          # which would otherwise open a no-op PR every day.
+          if [ -f tokens/diff-latest.json ]; then
+            TOTAL_CHANGES=$(jq '.summary.added + .summary.removed + .summary.modified + .summary.renamed' tokens/diff-latest.json)
+            if [ "$TOTAL_CHANGES" -gt 0 ]; then
+              echo "has_changes=true" >> $GITHUB_OUTPUT
+            else
+              echo "has_changes=false" >> $GITHUB_OUTPUT
+            fi
           else
+            # No previous snapshot to diff against yet - first run, always sync.
             echo "has_changes=true" >> $GITHUB_OUTPUT
           fi
 

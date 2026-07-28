@@ -1,8 +1,22 @@
 import fs from "fs";
 import path from "path";
+import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 
 dotenv.config();
+
+// ==================================================
+// Script-relative Paths
+// ==================================================
+// Resolve everything relative to this file's own location rather than
+// process.cwd(), so behavior doesn't change based on the directory a
+// CI/CD pipeline (or a developer) happens to invoke `node` from.
+
+const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
+
+function resolveFromScript(relativePath) {
+    return path.resolve(SCRIPT_DIR, relativePath);
+}
 
 // ==================================================
 // Load Configuration
@@ -11,10 +25,7 @@ dotenv.config();
 let config;
 
 try {
-    const configPath = path.join(
-        process.cwd(),
-        "config.json"
-    );
+    const configPath = resolveFromScript("config.json");
     const configData = fs.readFileSync(
         configPath,
         "utf-8"
@@ -44,12 +55,16 @@ const FIGMA_FILE_KEY = process.env[
 // Configuration from config.json
 // ==================================================
 
-const OUTPUT_DIR = config.paths.outputDir;
-const SNAPSHOT_DIR = config.paths.snapshotDir;
-const LATEST_JSON = config.paths.latestJsonFile;
-const LATEST_CSS_DIR = config.paths.latestCssDir;
+const OUTPUT_DIR = resolveFromScript(config.paths.outputDir);
+const SNAPSHOT_DIR = resolveFromScript(config.paths.snapshotDir);
+const LATEST_JSON = resolveFromScript(config.paths.latestJsonFile);
+const LATEST_CSS_DIR = resolveFromScript(config.paths.latestCssDir);
 
 const API_BASE_URL = config.figma.apiBaseUrl;
+
+const UNITS_CONFIG = config.css?.units || {};
+const SCOPE_CATEGORY_MAP = config.css?.scopeCategoryMap || {};
+const CSS_CATEGORIES = config.css?.categories || ["other"];
 
 // ==================================================
 // Validate Environment
@@ -146,10 +161,61 @@ function figmaColorToCSS(color) {
 }
 
 // ==================================================
+// Resolve CSS Unit for a Category
+// ==================================================
+
+function resolveUnit(category) {
+    if (Object.prototype.hasOwnProperty.call(UNITS_CONFIG, category)) {
+        return UNITS_CONFIG[category];
+    }
+    return UNITS_CONFIG.default ?? "px";
+}
+
+// ==================================================
+// Resolve Variable Alias to a CSS Reference
+// ==================================================
+// A variable can point at another variable instead of holding a literal
+// (e.g. a semantic token "color-brand-primary" aliasing a primitive
+// "blue-500"). Figma represents that as { type: "VARIABLE_ALIAS", id }
+// rather than a plain value. Emitting `var(--target)` here — instead of
+// resolving the target's own value into a flattened literal — is what
+// lets that relationship survive into the generated CSS: the alias
+// var(--target) is redefined once, but resolved against however
+// --target is defined for whichever mode/theme is active in the cascade
+// at the point of use.
+
+function isVariableAlias(value) {
+    return Boolean(value) && typeof value === "object" && value.type === "VARIABLE_ALIAS";
+}
+
+function resolveAliasCssName(value, variables) {
+    const target = variables[value.id];
+    if (!target) {
+        return null;
+    }
+    return `--${toKebabCase(target.name)}`;
+}
+
+// ==================================================
 // Convert Figma Variable Value to CSS
 // ==================================================
 
-function convertValue(value, resolvedType) {
+function convertValue(value, resolvedType, category, variables) {
+    // Variable alias (references another variable rather than holding
+    // a literal) - resolved before any type-specific handling below,
+    // since an alias can appear regardless of the variable's own
+    // resolvedType.
+    if (isVariableAlias(value)) {
+        const targetCssName = resolveAliasCssName(value, variables);
+        if (targetCssName) {
+            return `var(${targetCssName})`;
+        }
+        console.warn(
+            `Unresolved variable alias: ${value.id}`
+        );
+        return resolvedType === "COLOR" ? "transparent" : "initial";
+    }
+
     // COLOR
     if (resolvedType === "COLOR") {
         return figmaColorToCSS(value);
@@ -158,7 +224,8 @@ function convertValue(value, resolvedType) {
     // FLOAT
     if (resolvedType === "FLOAT") {
         if (typeof value === "number") {
-            return `${value}px`;
+            const unit = resolveUnit(category);
+            return `${value}${unit}`;
         }
         return value;
     }
@@ -180,8 +247,35 @@ function convertValue(value, resolvedType) {
 // ==================================================
 // Determine CSS Category
 // ==================================================
+// Figma auto-populates `scopes` on a variable based on where it's actually
+// bound in the file (e.g. a variable used for a corner radius gets
+// CORNER_RADIUS), independent of what the designer named it. That's a more
+// reliable signal than name matching, so it's checked first; the name-based
+// heuristic remains as a fallback for scopes like ALL_SCOPES that carry no
+// specific meaning.
+
+function getCategoryFromScopes(variable) {
+    for (const scope of variable.scopes || []) {
+        if (Object.prototype.hasOwnProperty.call(SCOPE_CATEGORY_MAP, scope)) {
+            return SCOPE_CATEGORY_MAP[scope];
+        }
+    }
+    return null;
+}
 
 function getCategory(variable) {
+    const scopeCategory = getCategoryFromScopes(variable);
+    if (scopeCategory) {
+        return scopeCategory;
+    }
+
+    // Variables scoped ALL_SCOPES (Figma's "no specific restriction" default)
+    // carry no usage hint, but resolvedType still reliably identifies colors
+    // even when the name doesn't (e.g. "Blue/50", "Primary/Primary 600").
+    if (variable.resolvedType === "COLOR") {
+        return "colors";
+    }
+
     const name = variable.name.toLowerCase();
 
     // Colors
@@ -354,19 +448,24 @@ function generateCSSFile(variables, fileName) {
 // ==================================================
 
 function generateCSSTokens(variables, variableCollections) {
-    // CSS categories
-    const cssFiles = {
-        colors: [],
-        spacing: [],
-        radius: [],
-        typography: [],
-        shadows: [],
-        other: []
-    };
+    // CSS categories - the set of output buckets is driven entirely by
+    // config.css.categories, so adding a new category (e.g. "motion") only
+    // requires a config change, not a code change.
+    const cssFiles = {};
+    for (const category of CSS_CATEGORIES) {
+        cssFiles[category] = [];
+    }
+    if (!cssFiles.other) {
+        cssFiles.other = [];
+    }
 
     // Process each Figma variable
     for (const variable of Object.values(variables)) {
-        const category = getCategory(variable);
+        let category = getCategory(variable);
+
+        if (!Object.prototype.hasOwnProperty.call(cssFiles, category)) {
+            category = "other";
+        }
 
         // Find variable collection
         const collection = variableCollections[variable.variableCollectionId];
@@ -394,7 +493,7 @@ function generateCSSTokens(variables, variableCollections) {
             const cssName = `--${toKebabCase(variable.name)}`;
 
             // CSS variable value
-            const cssValue = convertValue(value, variable.resolvedType);
+            const cssValue = convertValue(value, variable.resolvedType, category, variables);
 
             cssFiles[category].push({
                 cssName,
@@ -453,13 +552,6 @@ function getLatestTwoSnapshots() {
     ];
 }
 
-function normalizeTokenName(name) {
-    return name
-        .toLowerCase()
-        .replace(/[\s_-]+/g, "")
-        .trim();
-}
-
 function variablesEqual(var1, var2) {
     return JSON.stringify(var1) === JSON.stringify(var2);
 }
@@ -478,17 +570,10 @@ function generateDiffReport(previousSnapshot, currentSnapshot) {
     const modified = [];
     const renamed = [];
 
-    // Build name lookup maps
-    const previousNames = {};
-    const currentNames = {};
-
-    Object.entries(previousVars).forEach(([id, variable]) => {
-        previousNames[id] = variable.name;
-    });
-
-    Object.entries(currentVars).forEach(([id, variable]) => {
-        currentNames[id] = variable.name;
-    });
+    // Every comparison below keys off the Figma variable ID, which is
+    // stable across renames. An ID present in both snapshots is the same
+    // variable even if its name changed; an ID that disappears is a real
+    // removal, not a rename candidate to guess at via name similarity.
 
     // Find removed variables
     for (const [id, variable] of Object.entries(previousVars)) {
@@ -512,38 +597,13 @@ function generateDiffReport(previousSnapshot, currentSnapshot) {
         }
     }
 
-    // Find renamed variables
-    for (const prevId of Object.keys(previousVars)) {
-        if (!currentVars[prevId]) {
-            const prevName = previousNames[prevId];
-            const prevNormalized = normalizeTokenName(prevName);
-
-            for (const currId of Object.keys(currentVars)) {
-                if (!previousVars[currId]) {
-                    const currName = currentNames[currId];
-                    const currNormalized = normalizeTokenName(currName);
-
-                    if (prevNormalized === currNormalized && prevName !== currName) {
-                        renamed.push({
-                            previousName: prevName,
-                            currentName: currName,
-                            previousId: prevId,
-                            currentId: currId
-                        });
-                    }
-                }
-            }
-        }
-    }
-
     // Find modified variables
     for (const [id, currentVar] of Object.entries(currentVars)) {
         if (previousVars[id]) {
             const previousVar = previousVars[id];
 
-            // Check if name changed (and not already in renamed list)
-            const isRenamed = renamed.some(r => r.previousId === id);
-            if (previousVar.name !== currentVar.name && !isRenamed) {
+            // Check if name changed
+            if (previousVar.name !== currentVar.name) {
                 renamed.push({
                     previousName: previousVar.name,
                     currentName: currentVar.name,
