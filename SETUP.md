@@ -39,8 +39,8 @@ Create a `.env` file at the repo root (already gitignored - never commit
 this):
 
 ```
-FIGMA_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-FIGMA_FILE_KEY=xxxxxxxxxxxxxxxxxxxxxx
+enter FIGMA_TOKEN
+enter FIGMA_FILE_KEY
 ```
 
 - **FIGMA_TOKEN** - a Figma personal access token: Figma → Settings →
