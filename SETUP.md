@@ -39,7 +39,7 @@ Create a `.env` file at the repo root (already gitignored - never commit
 this):
 
 ```
-FIGMA_TOKEN=figd_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+FIGMA_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 FIGMA_FILE_KEY=xxxxxxxxxxxxxxxxxxxxxx
 ```
 
