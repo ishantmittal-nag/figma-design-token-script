@@ -61,14 +61,6 @@
 }
 
 [data-theme="mode-1"] {
-  --primary-primary-600: rgba(0, 131, 201, 1);
-  --primary-primary-400: rgba(83, 189, 245, 1);
-  --primary-primary-100: rgba(217, 241, 253, 1);
-  --primary-primary: rgba(0, 159, 245, 1);
-  --secondary-secondary-600: rgba(146, 165, 181, 1);
-  --secondary-secondary-400: rgba(194, 205, 214, 1);
-  --secondary-secondary-100: rgba(231, 235, 239, 1);
-  --secondary-secondary: rgba(170, 185, 197, 1);
   --blue-50: rgba(240, 248, 255, 1);
   --blue-100: rgba(223, 239, 255, 1);
   --blue-200: rgba(184, 223, 255, 1);
@@ -80,6 +72,14 @@
   --text--primary: rgba(0, 0, 0, 1);
   --green-500: rgba(155, 216, 10, 1);
   --red-200: rgba(255, 204, 210, 1);
+  --primary-primary-600: rgba(0, 131, 201, 1);
+  --primary-primary-400: rgba(83, 189, 245, 1);
+  --primary-primary-100: rgba(217, 241, 253, 1);
+  --primary-primary: rgba(0, 159, 245, 1);
+  --secondary-secondary-600: rgba(146, 165, 181, 1);
+  --secondary-secondary-400: rgba(194, 205, 214, 1);
+  --secondary-secondary-100: rgba(231, 235, 239, 1);
+  --secondary-secondary: rgba(170, 185, 197, 1);
 }
 :root {
   --text-primary: rgba(0, 0, 0, 1);

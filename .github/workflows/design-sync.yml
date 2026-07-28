@@ -41,44 +41,98 @@ jobs:
           echo "sync_exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
           exit 0
 
+      - name: Sync Figma components
+        id: sync-components
+        env:
+          FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
+          FIGMA_FILE_KEY: ${{ secrets.FIGMA_FILE_KEY }}
+        run: |
+          node sync-figma-components.js
+          EXIT_CODE=$?
+          echo "sync_exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
+          exit 0
+
       - name: Check for changes
         id: check-changes
         run: |
-          # Gate on the diff summary the script itself computed, not a raw
-          # `git diff`: tokens/diff-latest.json's own timestamp field and a
-          # freshly-created tokens/snapshots/ entry make the working tree
-          # differ on every run even when zero tokens actually changed,
-          # which would otherwise open a no-op PR every day.
+          # Gate on the diff summaries the scripts themselves computed, not a
+          # raw `git diff`: diff-latest.json's own timestamp field and a
+          # freshly-created snapshot entry make the working tree differ on
+          # every run even when nothing actually changed, which would
+          # otherwise open a no-op PR every day.
+          TOTAL_CHANGES=0
+
           if [ -f tokens/diff-latest.json ]; then
-            TOTAL_CHANGES=$(jq '.summary.added + .summary.removed + .summary.modified + .summary.renamed' tokens/diff-latest.json)
-            if [ "$TOTAL_CHANGES" -gt 0 ]; then
-              echo "has_changes=true" >> $GITHUB_OUTPUT
-            else
-              echo "has_changes=false" >> $GITHUB_OUTPUT
-            fi
+            TOKEN_CHANGES=$(jq '.summary.added + .summary.removed + .summary.modified + .summary.renamed' tokens/diff-latest.json)
+            TOTAL_CHANGES=$((TOTAL_CHANGES + TOKEN_CHANGES))
           else
             # No previous snapshot to diff against yet - first run, always sync.
+            TOTAL_CHANGES=$((TOTAL_CHANGES + 1))
+          fi
+
+          if [ -f components/diff-latest.json ]; then
+            COMPONENT_CHANGES=$(jq '.summary.added + .summary.removed + .summary.modified + .summary.renamed' components/diff-latest.json)
+            TOTAL_CHANGES=$((TOTAL_CHANGES + COMPONENT_CHANGES))
+          else
+            TOTAL_CHANGES=$((TOTAL_CHANGES + 1))
+          fi
+
+          if [ "$TOTAL_CHANGES" -gt 0 ]; then
             echo "has_changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Extract breaking changes info
         id: breaking-changes
         if: steps.check-changes.outputs.has_changes == 'true'
         run: |
+          TOKEN_BREAKING=0
           if [ -f tokens/diff-latest.json ]; then
-            BREAKING_COUNT=$(cat tokens/diff-latest.json | jq '.summary.breakingChanges')
-            echo "breaking_count=$BREAKING_COUNT" >> $GITHUB_OUTPUT
-            if [ "$BREAKING_COUNT" -gt 0 ]; then
-              echo "has_breaking=true" >> $GITHUB_OUTPUT
-              BREAKING_JSON=$(cat tokens/diff-latest.json | jq '.breakingChanges')
-              echo "breaking_json=$BREAKING_JSON" >> $GITHUB_OUTPUT
-            else
-              echo "has_breaking=false" >> $GITHUB_OUTPUT
-            fi
+            TOKEN_BREAKING=$(jq '.summary.breakingChanges' tokens/diff-latest.json)
+          fi
+
+          COMPONENT_BREAKING=0
+          if [ -f components/diff-latest.json ]; then
+            COMPONENT_BREAKING=$(jq '.summary.breakingChanges' components/diff-latest.json)
+          fi
+
+          TOTAL_BREAKING=$((TOKEN_BREAKING + COMPONENT_BREAKING))
+          echo "breaking_count=$TOTAL_BREAKING" >> $GITHUB_OUTPUT
+
+          if [ "$TOTAL_BREAKING" -gt 0 ]; then
+            echo "has_breaking=true" >> $GITHUB_OUTPUT
           else
-            echo "breaking_count=0" >> $GITHUB_OUTPUT
             echo "has_breaking=false" >> $GITHUB_OUTPUT
           fi
+
+      - name: Extract component changes info
+        id: component-changes
+        if: steps.check-changes.outputs.has_changes == 'true'
+        run: |
+          delimiter="ghadelimiter_$(date +%s%N)"
+
+          COMPONENT_LIST=""
+          if [ -f components/diff-latest.json ]; then
+            COMPONENT_LIST=$(jq -r '
+              def line(prefix; item): "- \(prefix) **\(item.name // item.currentName)**" +
+                (if item.codeLocation then " → `\(item.codeLocation)`" else " _(no Code Connect mapping found)_" end);
+              ((.changes.added // [])[]    | line("➕ Added:";    .)),
+              ((.changes.removed // [])[]  | line("➖ Removed:";  .)),
+              ((.changes.modified // [])[] | line("♻️ Modified:"; .)),
+              ((.changes.renamed // [])[]  | line("✏️ Renamed:";  .))
+            ' components/diff-latest.json)
+          fi
+
+          if [ -z "$COMPONENT_LIST" ]; then
+            COMPONENT_LIST="_No component changes in this sync._"
+          fi
+
+          {
+            echo "list<<$delimiter"
+            echo "$COMPONENT_LIST"
+            echo "$delimiter"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Generate branch name
         id: branch-name
@@ -104,20 +158,28 @@ jobs:
             ### Changes Summary
             - Updated design token snapshots
             - Regenerated CSS files
-            
-            **Diff Report Available:** See `tokens/diff-latest.json` for detailed changes
-            
+            - Updated published component snapshots
+
+            **Diff Report Available:** See `tokens/diff-latest.json` for detailed token changes, `components/diff-latest.json` for detailed component changes
+
+            ### Components Changed
+            ${{ steps.component-changes.outputs.list }}
+
             ### Files Changed
             - `tokens/variables-latest.json` - Latest variables
             - `tokens/snapshots/` - Timestamped + versioned snapshots
             - `tokens/*.css` - Generated CSS files
             - `tokens/index.css` - CSS imports index
-            - `tokens/diff-latest.json` - Change report
-            
+            - `tokens/diff-latest.json` - Token change report
+            - `components/components-latest.json` - Latest published components
+            - `components/snapshots/` - Timestamped component snapshots
+            - `components/diff-latest.json` - Component change report
+
             ### Review Checklist
             - [ ] CSS output looks correct
             - [ ] Review breaking changes (if any)
             - [ ] No unexpected token deletions/renames
+            - [ ] No unexpected component deletions/renames - check the code locations listed above
             - [ ] Figma version in snapshot key is accurate
             
             Auto-generated by Design Tokens Sync workflow.

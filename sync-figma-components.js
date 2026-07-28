@@ -1,0 +1,495 @@
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+import { execFileSync } from "child_process";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+// ==================================================
+// Script-relative Paths
+// ==================================================
+
+const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
+
+function resolveFromScript(relativePath) {
+    return path.resolve(SCRIPT_DIR, relativePath);
+}
+
+// ==================================================
+// Load Configuration
+// ==================================================
+
+let config;
+
+try {
+    const configPath = resolveFromScript("config.json");
+    const configData = fs.readFileSync(
+        configPath,
+        "utf-8"
+    );
+    config = JSON.parse(configData);
+} catch (error) {
+    console.error(
+        "Failed to load config.json:",
+        error.message
+    );
+    process.exit(1);
+}
+
+// ==================================================
+// Environment Variables
+// ==================================================
+
+const FIGMA_TOKEN = process.env[
+    config.environment.figmaTokenVar
+]?.trim();
+
+const FIGMA_FILE_KEY = process.env[
+    config.environment.figmaFileKeyVar
+]?.trim();
+
+// ==================================================
+// Configuration from config.json
+// ==================================================
+
+const OUTPUT_DIR = resolveFromScript(config.components.outputDir);
+const SNAPSHOT_DIR = resolveFromScript(config.components.snapshotDir);
+const LATEST_JSON = resolveFromScript(config.components.latestJsonFile);
+const CODE_CONNECT_DIR = resolveFromScript(config.components.codeConnectDir);
+const COMPONENT_MAP = config.components.componentMap || {};
+
+const API_BASE_URL = config.figma.apiBaseUrl;
+
+// ==================================================
+// Validate Environment
+// ==================================================
+
+if (!FIGMA_TOKEN || !FIGMA_FILE_KEY) {
+    console.error(
+        `Missing ${config.environment.figmaTokenVar} or ${config.environment.figmaFileKeyVar} in environment`
+    );
+    process.exit(1);
+}
+
+// ==================================================
+// Utility Functions
+// ==================================================
+
+function getFormattedTimestamp() {
+    return new Date()
+        .toISOString()
+        .split(".")[0]
+        .replace(/:/g, "-");
+}
+
+// ==================================================
+// Fetch Published File Components
+// ==================================================
+// Unlike variables (which are readable as soon as they exist locally in the
+// file), this only returns components that have actually been published to
+// a team library - an empty result here means nothing's been published yet,
+// not that the request failed.
+
+async function getFileComponents() {
+    const url = `${API_BASE_URL}/files/${FIGMA_FILE_KEY}/components`;
+
+    console.log("Fetching published Figma components...");
+
+    const response = await fetch(url, {
+        method: "GET",
+        headers: {
+            "X-Figma-Token": FIGMA_TOKEN
+        }
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+            `Figma API request failed: ${response.status}\n${errorText}`
+        );
+    }
+
+    const data = await response.json();
+    return data?.meta?.components || [];
+}
+
+// ==================================================
+// Code Connect Cross-Reference
+// ==================================================
+// Runs the Code Connect CLI locally against whatever *.figma.tsx files
+// already exist in the repo (no Figma API call needed for this part - it's
+// purely local source parsing) to build a map from a component's Figma node
+// id to the source file it's connected to. That's what lets a changed Figma
+// component get reported alongside the actual codebase location a developer
+// needs to look at, instead of just a bare component name.
+
+function normalizeNodeId(nodeId) {
+    // Figma node URLs use "123-456"; the Files API returns "123:456".
+    return nodeId.replace(/-/g, ":");
+}
+
+function extractNodeIdFromUrl(figmaNodeUrl) {
+    try {
+        const url = new URL(figmaNodeUrl);
+        const nodeId = url.searchParams.get("node-id");
+        return nodeId ? normalizeNodeId(nodeId) : null;
+    } catch {
+        return null;
+    }
+}
+
+function getCodeConnectMap() {
+    // Invoke the CLI's own JS entrypoint directly through `node` rather than
+    // shelling out to `npx`/`npx.cmd` - npx resolves to a platform-specific
+    // shim (a .cmd file on Windows) that execFileSync can't run without a
+    // shell, while the bin script itself is plain node-executable JS on
+    // every platform.
+    const codeConnectBin = resolveFromScript("node_modules/@figma/code-connect/bin/figma");
+
+    let raw;
+
+    try {
+        raw = execFileSync(
+            process.execPath,
+            [codeConnectBin, "connect", "parse", "--dir", CODE_CONNECT_DIR],
+            {
+                cwd: SCRIPT_DIR,
+                encoding: "utf-8",
+                stdio: ["ignore", "pipe", "pipe"],
+                env: {
+                    ...process.env,
+                    FIGMA_ACCESS_TOKEN: FIGMA_TOKEN
+                }
+            }
+        );
+    } catch (error) {
+        console.warn(
+            "Could not run Code Connect parse - continuing without code-location mapping:",
+            error.message
+        );
+        return {};
+    }
+
+    let entries;
+
+    try {
+        entries = JSON.parse(raw);
+    } catch {
+        console.warn(
+            "Code Connect parse did not return valid JSON - continuing without code-location mapping"
+        );
+        return {};
+    }
+
+    const map = {};
+
+    for (const entry of entries) {
+        const nodeId = extractNodeIdFromUrl(entry.figmaNode);
+
+        if (!nodeId) {
+            continue;
+        }
+
+        map[nodeId] = {
+            source: entry.source || entry._codeConnectFilePath || null,
+            component: entry.component || null
+        };
+    }
+
+    return map;
+}
+
+// ==================================================
+// Save JSON Snapshots with Versioning
+// ==================================================
+
+function saveJSONSnapshots(components) {
+    fs.mkdirSync(OUTPUT_DIR, { recursive: true });
+    fs.mkdirSync(SNAPSHOT_DIR, { recursive: true });
+
+    const timestamp = getFormattedTimestamp();
+    const snapshotKey = timestamp;
+
+    const componentsByKey = {};
+    for (const component of components) {
+        componentsByKey[component.key] = component;
+    }
+
+    const jsonData = {
+        fileKey: FIGMA_FILE_KEY,
+        snapshotKey: snapshotKey,
+        fetchedAt: new Date().toISOString(),
+        components: componentsByKey
+    };
+
+    const formattedJSON = JSON.stringify(jsonData, null, 2);
+
+    // Save latest JSON
+    fs.writeFileSync(LATEST_JSON, formattedJSON, "utf-8");
+    console.log("Updated components/components-latest.json");
+
+    // Save timestamped snapshot
+    const snapshotPath = path.join(
+        SNAPSHOT_DIR,
+        `components-${snapshotKey}.json`
+    );
+
+    fs.writeFileSync(snapshotPath, formattedJSON, "utf-8");
+    console.log(`Created snapshot: ${snapshotPath}`);
+
+    return snapshotKey;
+}
+
+// ==================================================
+// Diff and Breaking Change Detection
+// ==================================================
+
+function getLatestTwoSnapshots() {
+    const files = fs
+        .readdirSync(SNAPSHOT_DIR)
+        .filter(f => f.startsWith("components-") && f.endsWith(".json"))
+        .sort()
+        .reverse();
+
+    if (files.length < 2) {
+        return null; // First run, no previous snapshot to compare
+    }
+
+    return [
+        path.join(SNAPSHOT_DIR, files[0]),
+        path.join(SNAPSHOT_DIR, files[1])
+    ];
+}
+
+function loadSnapshot(filePath) {
+    const data = fs.readFileSync(filePath, "utf-8");
+    return JSON.parse(data);
+}
+
+// Code Connect is the authoritative source when a component has one (it's
+// tied to the exact node, so it survives a rename); the manual componentMap
+// in config.json is a same-project fallback keyed by name, for components
+// nobody's gotten around to connecting yet.
+function resolveCodeLocation(component, codeConnectMap, fallbackNames = [component.name]) {
+    const codeConnectMatch = codeConnectMap[component.node_id];
+    if (codeConnectMatch?.source) {
+        return codeConnectMatch.source;
+    }
+
+    for (const name of fallbackNames) {
+        if (COMPONENT_MAP[name]) {
+            return COMPONENT_MAP[name];
+        }
+    }
+
+    return null;
+}
+
+function describeComponent(component, codeConnectMap) {
+    return {
+        key: component.key,
+        name: component.name,
+        nodeId: component.node_id,
+        codeLocation: resolveCodeLocation(component, codeConnectMap)
+    };
+}
+
+function generateDiffReport(previousSnapshot, currentSnapshot, codeConnectMap) {
+    const previousComponents = previousSnapshot.components || {};
+    const currentComponents = currentSnapshot.components || {};
+
+    const added = [];
+    const removed = [];
+    const modified = [];
+    const renamed = [];
+
+    // Every comparison below keys off the Figma component's published `key`,
+    // which is stable across renames and re-edits - the same reasoning
+    // applied to variable IDs in sync-figma-tokens.js.
+
+    // Find removed components
+    for (const [key, component] of Object.entries(previousComponents)) {
+        if (!currentComponents[key]) {
+            removed.push(describeComponent(component, codeConnectMap));
+        }
+    }
+
+    // Find added components
+    for (const [key, component] of Object.entries(currentComponents)) {
+        if (!previousComponents[key]) {
+            added.push(describeComponent(component, codeConnectMap));
+        }
+    }
+
+    // Find renamed/modified components
+    for (const [key, currentComponent] of Object.entries(currentComponents)) {
+        if (previousComponents[key]) {
+            const previousComponent = previousComponents[key];
+
+            if (previousComponent.name !== currentComponent.name) {
+                renamed.push({
+                    previousName: previousComponent.name,
+                    currentName: currentComponent.name,
+                    key: key,
+                    // Prefer the new name, but fall back to the old one - a
+                    // manual map entry keyed under the pre-rename name is
+                    // still the right hint until someone updates it.
+                    codeLocation: resolveCodeLocation(
+                        currentComponent,
+                        codeConnectMap,
+                        [currentComponent.name, previousComponent.name]
+                    )
+                });
+            }
+
+            // Figma stamps published components with their own `updated_at`
+            // on every republish, so that's the "did this change" signal -
+            // no need to hash/compare visual properties ourselves.
+            if (previousComponent.updated_at !== currentComponent.updated_at) {
+                modified.push(describeComponent(currentComponent, codeConnectMap));
+            }
+        }
+    }
+
+    return {
+        added,
+        removed,
+        modified,
+        renamed
+    };
+}
+
+function detectBreakingChanges(diff) {
+    const breakingChanges = [];
+
+    if (diff.removed.length > 0) {
+        breakingChanges.push({
+            type: "REMOVED_COMPONENTS",
+            severity: "high",
+            count: diff.removed.length,
+            items: diff.removed,
+            message: `${diff.removed.length} component(s) removed`
+        });
+    }
+
+    if (diff.renamed.length > 0) {
+        breakingChanges.push({
+            type: "RENAMED_COMPONENTS",
+            severity: "high",
+            count: diff.renamed.length,
+            items: diff.renamed,
+            message: `${diff.renamed.length} component(s) renamed`
+        });
+    }
+
+    return breakingChanges;
+}
+
+function formatDiffSummary(diff, breakingChanges) {
+    let summary = "\n📊 COMPONENT CHANGES\n";
+    summary += `  Added:    ${diff.added.length}\n`;
+    summary += `  Removed:  ${diff.removed.length}\n`;
+    summary += `  Modified: ${diff.modified.length}\n`;
+    summary += `  Renamed:  ${diff.renamed.length}\n`;
+
+    if (breakingChanges.length > 0) {
+        summary += "\n⚠️  BREAKING CHANGES:\n";
+        for (const change of breakingChanges) {
+            summary += `  ❌ ${change.type} (${change.count})\n`;
+        }
+    }
+
+    return summary;
+}
+
+function saveDiffReport(diff, breakingChanges, snapshotKey) {
+    const diffData = {
+        timestamp: new Date().toISOString(),
+        snapshotKey: snapshotKey,
+        summary: {
+            added: diff.added.length,
+            removed: diff.removed.length,
+            modified: diff.modified.length,
+            renamed: diff.renamed.length,
+            breakingChanges: breakingChanges.length
+        },
+        changes: diff,
+        breakingChanges: breakingChanges
+    };
+
+    const diffPath = path.join(OUTPUT_DIR, "diff-latest.json");
+    fs.writeFileSync(diffPath, JSON.stringify(diffData, null, 2), "utf-8");
+    console.log(`📄 Component diff report saved: ${diffPath}`);
+
+    return diffPath;
+}
+
+// ==================================================
+// Main
+// ==================================================
+
+async function main() {
+    console.log("\n=========================================");
+    console.log("Figma Component Sync");
+    console.log("=========================================\n");
+
+    try {
+        // Fetch published components
+        const components = await getFileComponents();
+
+        console.log(
+            `Found ${components.length} published component(s)`
+        );
+
+        // Save JSON files with versioning
+        const snapshotKey = saveJSONSnapshots(components);
+
+        // Cross-reference with Code Connect (best-effort, non-fatal)
+        const codeConnectMap = getCodeConnectMap();
+        console.log(
+            `Resolved ${Object.keys(codeConnectMap).length} Code Connect mapping(s)`
+        );
+
+        // Generate diff report if previous snapshot exists
+        let breakingChanges = [];
+
+        const snapshots = getLatestTwoSnapshots();
+        if (snapshots) {
+            const [latestPath, previousPath] = snapshots;
+            const latestSnapshot = loadSnapshot(latestPath);
+            const previousSnapshot = loadSnapshot(previousPath);
+
+            const diff = generateDiffReport(previousSnapshot, latestSnapshot, codeConnectMap);
+            breakingChanges = detectBreakingChanges(diff);
+
+            const diffSummary = formatDiffSummary(diff, breakingChanges);
+            console.log(diffSummary);
+
+            saveDiffReport(diff, breakingChanges, snapshotKey);
+        } else {
+            console.log("\n📝 First run - no previous snapshot to compare");
+        }
+
+        console.log("\n=========================================");
+        console.log("Figma component sync completed successfully");
+        console.log(`Snapshot: ${snapshotKey}`);
+        if (breakingChanges.length > 0) {
+            console.log(`⚠️  ${breakingChanges.length} breaking change(s) detected`);
+            console.log("=========================================\n");
+            process.exit(1);
+        } else {
+            console.log("=========================================\n");
+            process.exit(0);
+        }
+    } catch (error) {
+        console.error("\nError:", error.message);
+        process.exit(1);
+    }
+}
+
+// ==================================================
+// Execute
+// ==================================================
+
+main();

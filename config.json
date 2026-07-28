@@ -54,6 +54,13 @@
       "OPACITY": "other"
     }
   },
+  "components": {
+    "outputDir": "./components",
+    "snapshotDir": "./components/snapshots",
+    "latestJsonFile": "./components/components-latest.json",
+    "codeConnectDir": "./src",
+    "componentMap": {}
+  },
   "figma": {
     "apiBaseUrl": "https://api.figma.com/v1"
   },
