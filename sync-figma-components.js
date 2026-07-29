@@ -1,8 +1,17 @@
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
 import { execFileSync } from "child_process";
 import dotenv from "dotenv";
+import {
+    makeScriptRelativeResolver,
+    getFormattedTimestamp,
+    getFigmaFileVersion,
+    loadSnapshot,
+    getLatestTwoSnapshots,
+    detectBreakingChanges,
+    formatDiffSummary,
+    saveDiffReport
+} from "./figma-sync-shared.js";
 
 dotenv.config();
 
@@ -10,11 +19,8 @@ dotenv.config();
 // Script-relative Paths
 // ==================================================
 
-const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
-
-function resolveFromScript(relativePath) {
-    return path.resolve(SCRIPT_DIR, relativePath);
-}
+const resolveFromScript = makeScriptRelativeResolver(import.meta.url);
+const SCRIPT_DIR = resolveFromScript(".");
 
 // ==================================================
 // Load Configuration
@@ -57,7 +63,13 @@ const OUTPUT_DIR = resolveFromScript(config.components.outputDir);
 const SNAPSHOT_DIR = resolveFromScript(config.components.snapshotDir);
 const LATEST_JSON = resolveFromScript(config.components.latestJsonFile);
 const CODE_CONNECT_DIR = resolveFromScript(config.components.codeConnectDir);
-const COMPONENT_MAP = config.components.componentMap || {};
+
+// Raw config shape is { <figma component URL>: <source path> } - resolved to
+// a node-id-keyed lookup once Code Connect's own URL-parsing helper is
+// available (declared further down, but hoisted - see "URL / Node ID
+// Resolution" below).
+const COMPONENT_MAP_BY_URL = config.components.componentMap || {};
+const COMPONENT_MAP_BY_NODE_ID = buildComponentMapByNodeId(COMPONENT_MAP_BY_URL);
 
 const API_BASE_URL = config.figma.apiBaseUrl;
 
@@ -70,17 +82,6 @@ if (!FIGMA_TOKEN || !FIGMA_FILE_KEY) {
         `Missing ${config.environment.figmaTokenVar} or ${config.environment.figmaFileKeyVar} in environment`
     );
     process.exit(1);
-}
-
-// ==================================================
-// Utility Functions
-// ==================================================
-
-function getFormattedTimestamp() {
-    return new Date()
-        .toISOString()
-        .split(".")[0]
-        .replace(/:/g, "-");
 }
 
 // ==================================================
@@ -115,14 +116,18 @@ async function getFileComponents() {
 }
 
 // ==================================================
-// Code Connect Cross-Reference
+// URL / Node ID Resolution
 // ==================================================
-// Runs the Code Connect CLI locally against whatever *.figma.tsx files
-// already exist in the repo (no Figma API call needed for this part - it's
-// purely local source parsing) to build a map from a component's Figma node
-// id to the source file it's connected to. That's what lets a changed Figma
-// component get reported alongside the actual codebase location a developer
-// needs to look at, instead of just a bare component name.
+// Both code-location sources - Code Connect and the manual componentMap -
+// are keyed off a Figma node id extracted from a URL, rather than a
+// component's `name`. A component's `name` is not a safe key on its own:
+// Figma's variant-naming convention ("State=Default", "Type=Primary") is
+// generic by design, so unrelated components in the same file routinely end
+// up with an identical `name` (this file has two: Product Card and Input
+// Field both have variants literally named "State=Default" and
+// "State=Disabled"). node_id has none of that ambiguity - it's unique
+// within the file - and is stable across renames/restyles, which is why the
+// Files API's own diff logic already keys off it for everything else.
 
 function normalizeNodeId(nodeId) {
     // Figma node URLs use "123-456"; the Files API returns "123:456".
@@ -138,6 +143,39 @@ function extractNodeIdFromUrl(figmaNodeUrl) {
         return null;
     }
 }
+
+// Turns the human-authored { <figma URL> : <source path> } map from
+// config.json into a { <node id> : <source path> } lookup, using the same
+// URL parsing Code Connect's own mapping goes through - one identifier
+// scheme for both code-location sources instead of two.
+function buildComponentMapByNodeId(componentMapByUrl) {
+    const map = {};
+
+    for (const [figmaUrl, source] of Object.entries(componentMapByUrl)) {
+        const nodeId = extractNodeIdFromUrl(figmaUrl);
+
+        if (!nodeId) {
+            console.warn(
+                `componentMap entry has an unparseable Figma URL, skipping: ${figmaUrl}`
+            );
+            continue;
+        }
+
+        map[nodeId] = source;
+    }
+
+    return map;
+}
+
+// ==================================================
+// Code Connect Cross-Reference
+// ==================================================
+// Runs the Code Connect CLI locally against whatever *.figma.tsx files
+// already exist in the repo (no Figma API call needed for this part - it's
+// purely local source parsing) to build a map from a component's Figma node
+// id to the source file it's connected to. That's what lets a changed Figma
+// component get reported alongside the actual codebase location a developer
+// needs to look at, instead of just a bare component name.
 
 function getCodeConnectMap() {
     // Invoke the CLI's own JS entrypoint directly through `node` rather than
@@ -204,12 +242,12 @@ function getCodeConnectMap() {
 // Save JSON Snapshots with Versioning
 // ==================================================
 
-function saveJSONSnapshots(components) {
+function saveJSONSnapshots(components, figmaVersion) {
     fs.mkdirSync(OUTPUT_DIR, { recursive: true });
     fs.mkdirSync(SNAPSHOT_DIR, { recursive: true });
 
     const timestamp = getFormattedTimestamp();
-    const snapshotKey = timestamp;
+    const snapshotKey = `${timestamp}_${figmaVersion}`;
 
     const componentsByKey = {};
     for (const component of components) {
@@ -218,6 +256,7 @@ function saveJSONSnapshots(components) {
 
     const jsonData = {
         fileKey: FIGMA_FILE_KEY,
+        figmaVersion: figmaVersion,
         snapshotKey: snapshotKey,
         fetchedAt: new Date().toISOString(),
         components: componentsByKey
@@ -245,45 +284,18 @@ function saveJSONSnapshots(components) {
 // Diff and Breaking Change Detection
 // ==================================================
 
-function getLatestTwoSnapshots() {
-    const files = fs
-        .readdirSync(SNAPSHOT_DIR)
-        .filter(f => f.startsWith("components-") && f.endsWith(".json"))
-        .sort()
-        .reverse();
-
-    if (files.length < 2) {
-        return null; // First run, no previous snapshot to compare
-    }
-
-    return [
-        path.join(SNAPSHOT_DIR, files[0]),
-        path.join(SNAPSHOT_DIR, files[1])
-    ];
-}
-
-function loadSnapshot(filePath) {
-    const data = fs.readFileSync(filePath, "utf-8");
-    return JSON.parse(data);
-}
-
 // Code Connect is the authoritative source when a component has one (it's
 // tied to the exact node, so it survives a rename); the manual componentMap
-// in config.json is a same-project fallback keyed by name, for components
-// nobody's gotten around to connecting yet.
-function resolveCodeLocation(component, codeConnectMap, fallbackNames = [component.name]) {
+// in config.json is the fallback. Both are resolved by node_id, which -
+// unlike `name` - doesn't change across a rename, so a single lookup covers
+// the rename case too instead of needing to check both the old and new name.
+function resolveCodeLocation(component, codeConnectMap) {
     const codeConnectMatch = codeConnectMap[component.node_id];
     if (codeConnectMatch?.source) {
         return codeConnectMatch.source;
     }
 
-    for (const name of fallbackNames) {
-        if (COMPONENT_MAP[name]) {
-            return COMPONENT_MAP[name];
-        }
-    }
-
-    return null;
+    return COMPONENT_MAP_BY_NODE_ID[component.node_id] || null;
 }
 
 function describeComponent(component, codeConnectMap) {
@@ -332,14 +344,9 @@ function generateDiffReport(previousSnapshot, currentSnapshot, codeConnectMap) {
                     previousName: previousComponent.name,
                     currentName: currentComponent.name,
                     key: key,
-                    // Prefer the new name, but fall back to the old one - a
-                    // manual map entry keyed under the pre-rename name is
-                    // still the right hint until someone updates it.
-                    codeLocation: resolveCodeLocation(
-                        currentComponent,
-                        codeConnectMap,
-                        [currentComponent.name, previousComponent.name]
-                    )
+                    // node_id doesn't change on a rename, so this resolves
+                    // correctly without needing to check the old name too.
+                    codeLocation: resolveCodeLocation(currentComponent, codeConnectMap)
                 });
             }
 
@@ -360,69 +367,11 @@ function generateDiffReport(previousSnapshot, currentSnapshot, codeConnectMap) {
     };
 }
 
-function detectBreakingChanges(diff) {
-    const breakingChanges = [];
-
-    if (diff.removed.length > 0) {
-        breakingChanges.push({
-            type: "REMOVED_COMPONENTS",
-            severity: "high",
-            count: diff.removed.length,
-            items: diff.removed,
-            message: `${diff.removed.length} component(s) removed`
-        });
-    }
-
-    if (diff.renamed.length > 0) {
-        breakingChanges.push({
-            type: "RENAMED_COMPONENTS",
-            severity: "high",
-            count: diff.renamed.length,
-            items: diff.renamed,
-            message: `${diff.renamed.length} component(s) renamed`
-        });
-    }
-
-    return breakingChanges;
-}
-
-function formatDiffSummary(diff, breakingChanges) {
-    let summary = "\n📊 COMPONENT CHANGES\n";
-    summary += `  Added:    ${diff.added.length}\n`;
-    summary += `  Removed:  ${diff.removed.length}\n`;
-    summary += `  Modified: ${diff.modified.length}\n`;
-    summary += `  Renamed:  ${diff.renamed.length}\n`;
-
-    if (breakingChanges.length > 0) {
-        summary += "\n⚠️  BREAKING CHANGES:\n";
-        for (const change of breakingChanges) {
-            summary += `  ❌ ${change.type} (${change.count})\n`;
-        }
-    }
-
-    return summary;
-}
-
-function saveDiffReport(diff, breakingChanges, snapshotKey) {
-    const diffData = {
-        timestamp: new Date().toISOString(),
-        snapshotKey: snapshotKey,
-        summary: {
-            added: diff.added.length,
-            removed: diff.removed.length,
-            modified: diff.modified.length,
-            renamed: diff.renamed.length,
-            breakingChanges: breakingChanges.length
-        },
-        changes: diff,
-        breakingChanges: breakingChanges
-    };
-
-    const diffPath = path.join(OUTPUT_DIR, "diff-latest.json");
-    fs.writeFileSync(diffPath, JSON.stringify(diffData, null, 2), "utf-8");
-    console.log(`📄 Component diff report saved: ${diffPath}`);
-
-    return diffPath;
+function detectComponentBreakingChanges(diff) {
+    return detectBreakingChanges([
+        { type: "REMOVED_COMPONENTS", items: diff.removed, message: c => `${c} component(s) removed` },
+        { type: "RENAMED_COMPONENTS", items: diff.renamed, message: c => `${c} component(s) renamed` }
+    ]);
 }
 
 // ==================================================
@@ -435,38 +384,47 @@ async function main() {
     console.log("=========================================\n");
 
     try {
-        // Fetch published components
-        const components = await getFileComponents();
+        // Fetch file version and published components concurrently -
+        // independent requests, same pattern as sync-figma-tokens.js.
+        const [figmaVersion, components] = await Promise.all([
+            getFigmaFileVersion(API_BASE_URL, FIGMA_FILE_KEY, FIGMA_TOKEN),
+            getFileComponents()
+        ]);
 
         console.log(
             `Found ${components.length} published component(s)`
         );
 
         // Save JSON files with versioning
-        const snapshotKey = saveJSONSnapshots(components);
+        const snapshotKey = saveJSONSnapshots(components, figmaVersion);
 
-        // Cross-reference with Code Connect (best-effort, non-fatal)
-        const codeConnectMap = getCodeConnectMap();
+        // Cross-reference with Code Connect (best-effort, non-fatal). Skip
+        // the subprocess spawn entirely when there are no components to
+        // annotate - the most expensive step in this script, and wasted
+        // work whenever nothing's been published yet.
+        const codeConnectMap = components.length > 0 ? getCodeConnectMap() : {};
         console.log(
-            `Resolved ${Object.keys(codeConnectMap).length} Code Connect mapping(s)`
+            components.length > 0
+                ? `Resolved ${Object.keys(codeConnectMap).length} Code Connect mapping(s)`
+                : "Skipped Code Connect lookup - no published components to annotate"
         );
 
         // Generate diff report if previous snapshot exists
         let breakingChanges = [];
 
-        const snapshots = getLatestTwoSnapshots();
+        const snapshots = getLatestTwoSnapshots(SNAPSHOT_DIR, "components-");
         if (snapshots) {
             const [latestPath, previousPath] = snapshots;
             const latestSnapshot = loadSnapshot(latestPath);
             const previousSnapshot = loadSnapshot(previousPath);
 
             const diff = generateDiffReport(previousSnapshot, latestSnapshot, codeConnectMap);
-            breakingChanges = detectBreakingChanges(diff);
+            breakingChanges = detectComponentBreakingChanges(diff);
 
-            const diffSummary = formatDiffSummary(diff, breakingChanges);
+            const diffSummary = formatDiffSummary(diff, breakingChanges, "COMPONENT CHANGES");
             console.log(diffSummary);
 
-            saveDiffReport(diff, breakingChanges, snapshotKey);
+            saveDiffReport(OUTPUT_DIR, diff, breakingChanges, snapshotKey, "Component diff report");
         } else {
             console.log("\n📝 First run - no previous snapshot to compare");
         }

@@ -31,75 +31,50 @@ jobs:
         run: npm ci
 
       - name: Sync Figma tokens
-        id: sync
         env:
           FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
           FIGMA_FILE_KEY: ${{ secrets.FIGMA_FILE_KEY }}
-        run: |
-          node sync-figma-tokens.js
-          EXIT_CODE=$?
-          echo "sync_exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
-          exit 0
+        run: node sync-figma-tokens.js || true
 
       - name: Sync Figma components
-        id: sync-components
         env:
           FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
           FIGMA_FILE_KEY: ${{ secrets.FIGMA_FILE_KEY }}
-        run: |
-          node sync-figma-components.js
-          EXIT_CODE=$?
-          echo "sync_exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
-          exit 0
+        run: node sync-figma-components.js || true
 
       - name: Check for changes
         id: check-changes
         run: |
-          # Gate on the diff summaries the scripts themselves computed, not a
-          # raw `git diff`: diff-latest.json's own timestamp field and a
-          # freshly-created snapshot entry make the working tree differ on
-          # every run even when nothing actually changed, which would
-          # otherwise open a no-op PR every day.
-          TOTAL_CHANGES=0
+          # Read the `hasChanges` / `breakingChanges` fields the scripts
+          # themselves already computed, rather than re-deriving them here -
+          # a raw `git diff` would look non-empty on every run regardless
+          # (diff-latest.json's own timestamp field and a freshly-created
+          # snapshot entry differ every time), and re-summing the four
+          # change-count fields in bash would just duplicate what
+          # saveDiffReport() in figma-sync-shared.js already decided.
+          HAS_CHANGES=false
+          TOKEN_BREAKING=0
+          COMPONENT_BREAKING=0
 
           if [ -f tokens/diff-latest.json ]; then
-            TOKEN_CHANGES=$(jq '.summary.added + .summary.removed + .summary.modified + .summary.renamed' tokens/diff-latest.json)
-            TOTAL_CHANGES=$((TOTAL_CHANGES + TOKEN_CHANGES))
+            [ "$(jq -r '.hasChanges' tokens/diff-latest.json)" = "true" ] && HAS_CHANGES=true
+            TOKEN_BREAKING=$(jq '.summary.breakingChanges' tokens/diff-latest.json)
           else
             # No previous snapshot to diff against yet - first run, always sync.
-            TOTAL_CHANGES=$((TOTAL_CHANGES + 1))
+            HAS_CHANGES=true
           fi
 
           if [ -f components/diff-latest.json ]; then
-            COMPONENT_CHANGES=$(jq '.summary.added + .summary.removed + .summary.modified + .summary.renamed' components/diff-latest.json)
-            TOTAL_CHANGES=$((TOTAL_CHANGES + COMPONENT_CHANGES))
-          else
-            TOTAL_CHANGES=$((TOTAL_CHANGES + 1))
-          fi
-
-          if [ "$TOTAL_CHANGES" -gt 0 ]; then
-            echo "has_changes=true" >> $GITHUB_OUTPUT
-          else
-            echo "has_changes=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Extract breaking changes info
-        id: breaking-changes
-        if: steps.check-changes.outputs.has_changes == 'true'
-        run: |
-          TOKEN_BREAKING=0
-          if [ -f tokens/diff-latest.json ]; then
-            TOKEN_BREAKING=$(jq '.summary.breakingChanges' tokens/diff-latest.json)
-          fi
-
-          COMPONENT_BREAKING=0
-          if [ -f components/diff-latest.json ]; then
+            [ "$(jq -r '.hasChanges' components/diff-latest.json)" = "true" ] && HAS_CHANGES=true
             COMPONENT_BREAKING=$(jq '.summary.breakingChanges' components/diff-latest.json)
+          else
+            HAS_CHANGES=true
           fi
 
           TOTAL_BREAKING=$((TOKEN_BREAKING + COMPONENT_BREAKING))
-          echo "breaking_count=$TOTAL_BREAKING" >> $GITHUB_OUTPUT
 
+          echo "has_changes=$HAS_CHANGES" >> $GITHUB_OUTPUT
+          echo "breaking_count=$TOTAL_BREAKING" >> $GITHUB_OUTPUT
           if [ "$TOTAL_BREAKING" -gt 0 ]; then
             echo "has_breaking=true" >> $GITHUB_OUTPUT
           else
@@ -146,14 +121,14 @@ jobs:
         if: steps.check-changes.outputs.has_changes == 'true'
         uses: peter-evans/create-pull-request@v5
         with:
-          commit-message: ${{ fromJson(env.CONFIG).github.commitMessage }}
-          title: ${{ steps.breaking-changes.outputs.has_breaking == 'true' && '⚠️ ' || '✅ ' }}${{ fromJson(env.CONFIG).github.prTitle }}
+          commit-message: "chore: sync design tokens from Figma"
+          title: "${{ steps.check-changes.outputs.has_breaking == 'true' && '⚠️ ' || '✅ ' }}chore: design tokens sync"
           body: |
             ## Design Tokens Sync
-            
+
             Automated sync of design tokens from Figma.
-            
-            ${{ steps.breaking-changes.outputs.has_breaking == 'true' && format('### ⚠️ BREAKING CHANGES DETECTED\n\n**Breaking Changes Found:** {0}\n\nThis PR contains breaking changes that may require updates in the codebase. Please review carefully before merging.\n\n', steps.breaking-changes.outputs.breaking_count) || '### ✅ No Breaking Changes\nThis update is backward compatible.' }}
+
+            ${{ steps.check-changes.outputs.has_breaking == 'true' && format('### ⚠️ BREAKING CHANGES DETECTED\n\n**Breaking Changes Found:** {0}\n\nThis PR contains breaking changes that may require updates in the codebase. Please review carefully before merging.\n\n', steps.check-changes.outputs.breaking_count) || '### ✅ No Breaking Changes\nThis update is backward compatible.' }}
             
             ### Changes Summary
             - Updated design token snapshots
@@ -185,9 +160,7 @@ jobs:
             Auto-generated by Design Tokens Sync workflow.
           branch: ${{ steps.branch-name.outputs.branch_name }}
           delete-branch: true
-          labels: design-tokens,automated${{ steps.breaking-changes.outputs.has_breaking == 'true' && ',breaking-changes' || '' }}
-        env:
-          CONFIG: '{"github": {"commitMessage": "chore: sync design tokens from Figma", "prLabels": ["design-tokens", "automated"]}}'
+          labels: design-tokens,automated${{ steps.check-changes.outputs.has_breaking == 'true' && ',breaking-changes' || '' }}
 
       - name: Log sync summary
         run: |
