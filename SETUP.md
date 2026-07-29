@@ -80,19 +80,24 @@ that's intentional and is how the CI workflow decides whether to flag a PR.
   is actually used in Figma regardless of naming.
 - `components.codeConnectDir` - directory the Code Connect CLI parses for
   `*.figma.tsx` files (see below). Defaults to `./src`.
-- `components.componentMap` - manual fallback map from an exact Figma
-  component name to its file path in this repo, for components that don't
-  have a Code Connect mapping yet:
+- `components.componentMap` - manual fallback map from a component's Figma
+  URL (copy via right-click → "Copy link to selection" in Figma) to its file
+  path in this repo, for components that don't have a Code Connect mapping
+  yet:
 
   ```json
   "componentMap": {
-    "Button / Primary": "src/components/atoms/PrimaryButton.jsx"
+    "https://www.figma.com/design/<file-key>/...?node-id=10-20": "src/components/atoms/PrimaryButton.jsx"
   }
   ```
 
   Code Connect always wins when both exist for the same component (it's
   tied to the exact node, so it survives a Figma-side rename); this map is
-  the fallback for everything else.
+  the fallback for everything else. It's keyed by URL (parsed down to the
+  node id) rather than by component name on purpose - Figma's variant-naming
+  convention (e.g. `State=Default`) is generic and routinely collides across
+  entirely unrelated components in the same file, so a name-keyed map can
+  silently point two different components at the same file.
 
 ## 5. Components: publishing + Code Connect
 

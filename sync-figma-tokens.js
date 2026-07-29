@@ -1,7 +1,16 @@
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
 import dotenv from "dotenv";
+import {
+    makeScriptRelativeResolver,
+    getFormattedTimestamp,
+    getFigmaFileVersion,
+    loadSnapshot,
+    getLatestTwoSnapshots,
+    detectBreakingChanges,
+    formatDiffSummary,
+    saveDiffReport
+} from "./figma-sync-shared.js";
 
 dotenv.config();
 
@@ -12,11 +21,7 @@ dotenv.config();
 // process.cwd(), so behavior doesn't change based on the directory a
 // CI/CD pipeline (or a developer) happens to invoke `node` from.
 
-const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
-
-function resolveFromScript(relativePath) {
-    return path.resolve(SCRIPT_DIR, relativePath);
-}
+const resolveFromScript = makeScriptRelativeResolver(import.meta.url);
 
 // ==================================================
 // Load Configuration
@@ -89,58 +94,6 @@ function toKebabCase(value) {
         .replace(/[^a-zA-Z0-9/-]/g, "")
         .replace(/\/+/g, "-")
         .toLowerCase();
-}
-
-function getFormattedTimestamp() {
-    return new Date()
-        .toISOString()
-        .split(".")[0]
-        .replace(/:/g, "-");
-}
-
-// ==================================================
-// Fetch Figma File Version
-// ==================================================
-
-async function getFigmaFileVersion() {
-    const url = `${API_BASE_URL}/files/${FIGMA_FILE_KEY}`;
-
-    console.log("Fetching Figma file metadata...");
-
-    try {
-        const response = await fetch(url, {
-            method: "GET",
-            headers: {
-                "X-Figma-Token": FIGMA_TOKEN
-            }
-        });
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(
-                `Figma API request failed: ${response.status}\n${errorText}`
-            );
-        }
-
-        const data = await response.json();
-        const version = data?.version || "unknown";
-        const name = data?.name || "unknown";
-
-        console.log(
-            `File: ${name}`
-        );
-        console.log(
-            `Version: ${version}`
-        );
-
-        return version;
-    } catch (error) {
-        console.error(
-            "Failed to fetch file version:",
-            error.message
-        );
-        throw error;
-    }
 }
 
 // ==================================================
@@ -451,12 +404,13 @@ function generateCSSTokens(variables, variableCollections) {
     // CSS categories - the set of output buckets is driven entirely by
     // config.css.categories, so adding a new category (e.g. "motion") only
     // requires a config change, not a code change.
+    const categoriesWithFallback = CSS_CATEGORIES.includes("other")
+        ? CSS_CATEGORIES
+        : [...CSS_CATEGORIES, "other"];
+
     const cssFiles = {};
-    for (const category of CSS_CATEGORIES) {
+    for (const category of categoriesWithFallback) {
         cssFiles[category] = [];
-    }
-    if (!cssFiles.other) {
-        cssFiles.other = [];
     }
 
     // Process each Figma variable
@@ -535,30 +489,8 @@ function generateCSSTokens(variables, variableCollections) {
 // Diff and Breaking Change Detection
 // ==================================================
 
-function getLatestTwoSnapshots() {
-    const files = fs
-        .readdirSync(SNAPSHOT_DIR)
-        .filter(f => f.startsWith("variables-") && f.endsWith(".json"))
-        .sort()
-        .reverse();
-
-    if (files.length < 2) {
-        return null; // First run, no previous snapshot to compare
-    }
-
-    return [
-        path.join(SNAPSHOT_DIR, files[0]),
-        path.join(SNAPSHOT_DIR, files[1])
-    ];
-}
-
 function variablesEqual(var1, var2) {
     return JSON.stringify(var1) === JSON.stringify(var2);
-}
-
-function loadSnapshot(filePath) {
-    const data = fs.readFileSync(filePath, "utf-8");
-    return JSON.parse(data);
 }
 
 function generateDiffReport(previousSnapshot, currentSnapshot) {
@@ -657,80 +589,14 @@ function generateDiffReport(previousSnapshot, currentSnapshot) {
     };
 }
 
-function detectBreakingChanges(diff) {
-    const breakingChanges = [];
-
-    if (diff.removed.length > 0) {
-        breakingChanges.push({
-            type: "REMOVED_VARIABLES",
-            severity: "high",
-            count: diff.removed.length,
-            items: diff.removed,
-            message: `${diff.removed.length} variable(s) removed`
-        });
-    }
-
-    if (diff.renamed.length > 0) {
-        breakingChanges.push({
-            type: "RENAMED_VARIABLES",
-            severity: "high",
-            count: diff.renamed.length,
-            items: diff.renamed,
-            message: `${diff.renamed.length} variable(s) renamed`
-        });
-    }
-
+function detectTokenBreakingChanges(diff) {
     const typeChanges = diff.modified.filter(m => m.typeChanged);
-    if (typeChanges.length > 0) {
-        breakingChanges.push({
-            type: "TYPE_CHANGED",
-            severity: "high",
-            count: typeChanges.length,
-            items: typeChanges,
-            message: `${typeChanges.length} variable(s) had type changed`
-        });
-    }
 
-    return breakingChanges;
-}
-
-function formatDiffSummary(diff, breakingChanges) {
-    let summary = "\n📊 TOKEN CHANGES\n";
-    summary += `  Added:    ${diff.added.length}\n`;
-    summary += `  Removed:  ${diff.removed.length}\n`;
-    summary += `  Modified: ${diff.modified.length}\n`;
-    summary += `  Renamed:  ${diff.renamed.length}\n`;
-
-    if (breakingChanges.length > 0) {
-        summary += "\n⚠️  BREAKING CHANGES:\n";
-        for (const change of breakingChanges) {
-            summary += `  ❌ ${change.type} (${change.count})\n`;
-        }
-    }
-
-    return summary;
-}
-
-function saveDiffReport(diff, breakingChanges, snapshotKey) {
-    const diffData = {
-        timestamp: new Date().toISOString(),
-        snapshotKey: snapshotKey,
-        summary: {
-            added: diff.added.length,
-            removed: diff.removed.length,
-            modified: diff.modified.length,
-            renamed: diff.renamed.length,
-            breakingChanges: breakingChanges.length
-        },
-        changes: diff,
-        breakingChanges: breakingChanges
-    };
-
-    const diffPath = path.join(OUTPUT_DIR, "diff-latest.json");
-    fs.writeFileSync(diffPath, JSON.stringify(diffData, null, 2), "utf-8");
-    console.log(`📄 Diff report saved: ${diffPath}`);
-
-    return diffPath;
+    return detectBreakingChanges([
+        { type: "REMOVED_VARIABLES", items: diff.removed, message: c => `${c} variable(s) removed` },
+        { type: "RENAMED_VARIABLES", items: diff.renamed, message: c => `${c} variable(s) renamed` },
+        { type: "TYPE_CHANGED", items: typeChanges, message: c => `${c} variable(s) had type changed` }
+    ]);
 }
 
 // ==================================================
@@ -743,11 +609,11 @@ async function main() {
     console.log("=========================================\n");
 
     try {
-        // Fetch Figma file version
-        const figmaVersion = await getFigmaFileVersion();
-
-        // Fetch Figma data
-        const data = await getLocalVariables();
+        // Fetch file version and variables concurrently - independent requests
+        const [figmaVersion, data] = await Promise.all([
+            getFigmaFileVersion(API_BASE_URL, FIGMA_FILE_KEY, FIGMA_TOKEN),
+            getLocalVariables()
+        ]);
 
         const variables = data.meta?.variables || {};
         const variableCollections = data.meta?.variableCollections || {};
@@ -773,19 +639,19 @@ async function main() {
         let diffSummary = "";
         let breakingChanges = [];
 
-        const snapshots = getLatestTwoSnapshots();
+        const snapshots = getLatestTwoSnapshots(SNAPSHOT_DIR, "variables-");
         if (snapshots) {
             const [latestPath, previousPath] = snapshots;
             const latestSnapshot = loadSnapshot(latestPath);
             const previousSnapshot = loadSnapshot(previousPath);
 
             const diff = generateDiffReport(previousSnapshot, latestSnapshot);
-            breakingChanges = detectBreakingChanges(diff);
+            breakingChanges = detectTokenBreakingChanges(diff);
 
-            diffSummary = formatDiffSummary(diff, breakingChanges);
+            diffSummary = formatDiffSummary(diff, breakingChanges, "TOKEN CHANGES");
             console.log(diffSummary);
 
-            saveDiffReport(diff, breakingChanges, snapshotKey);
+            saveDiffReport(OUTPUT_DIR, diff, breakingChanges, snapshotKey, "Diff report");
         } else {
             console.log("\n📝 First run - no previous snapshot to compare");
         }
