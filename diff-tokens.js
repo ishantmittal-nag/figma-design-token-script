@@ -213,7 +213,7 @@ function generateDiff(previousSnapshot, currentSnapshot) {
 // Detect Breaking Changes
 // ==================================================
 
-function detectBreakingChanges(diff) {
+function detectBreakingChanges() {
     const breakingChanges = [];
 
     // Breaking change 1: Removed variables
