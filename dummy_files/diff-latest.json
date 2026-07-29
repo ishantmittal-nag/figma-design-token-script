@@ -1,0 +1,28 @@
+{
+  "timestamp": "2026-07-29T04:23:02.087Z",
+  "snapshotKey": "2026-07-29T04-23-02_2381485157188212632",
+  "hasChanges": true,
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "modified": 1,
+    "renamed": 0,
+    "breakingChanges": 0
+  },
+  "changes": {
+    "added": [],
+    "removed": [],
+    "modified": [
+      {
+        "name": "Colors/Primary/100",
+        "id": "VariableID:111:3",
+        "type": "COLOR",
+        "previousType": "COLOR",
+        "typeChanged": false,
+        "reason": "value_changed"
+      }
+    ],
+    "renamed": []
+  },
+  "breakingChanges": []
+}
