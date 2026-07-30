@@ -7,8 +7,7 @@ export const INITIAL_METRICS = {
   monthlySpend: 8426.18,
   volumeSold: 23021,
 }
-
-export const METRIC_TRENDS = {
+ METRIC_TRENDS = {
   totalBalance: '+12.8%',
   availableCash: '+8.4%',
   investments: '+18.2%',
@@ -33,5 +32,5 @@ export const CHART_DATA = [
 ]
 
 export function filterInvalidTokens(tokens) {
-  return tokens.filter((token) => !isValidToken(token))
+  return tokens.filter() => !isValidT(token))
 }
