@@ -54,19 +54,35 @@ jobs:
           echo "sync_exit_code=$CODE" >> "$GITHUB_OUTPUT"
 
       - name: Commit and push updated tokens
+        id: commit
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add tokens/
           if git diff --cached --quiet; then
             echo "No token changes to commit."
+            echo "committed=false" >> "$GITHUB_OUTPUT"
           else
             git commit -m "chore: sync design tokens from Figma"
             git push origin HEAD:figma-tokens-sync
+            echo "committed=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Fail job if the sync script errored
-        if: steps.sync.outputs.sync_exit_code != '0'
+      # sync-figma-tokens.js exits non-zero for two different reasons that
+      # need different treatment here: a real error (bad token, API/network
+      # failure) never reaches the file-writing code, so nothing gets
+      # committed above - that's an actual infra failure, fail loud. A
+      # breaking-change diff (e.g. a removed variable) DOES write and commit
+      # successfully; that's a legitimate result the sync produced, not a
+      # broken pipeline, so it's surfaced as a summary instead of a red X.
+      - name: Report breaking changes (non-fatal)
+        if: steps.sync.outputs.sync_exit_code != '0' && steps.commit.outputs.committed == 'true'
         run: |
-          echo "sync-figma-tokens.js exited with code ${{ steps.sync.outputs.sync_exit_code }} (non-zero also means breaking token changes were detected - see tokens/diff-latest.json)."
+          echo "## ⚠️ Breaking token changes detected" >> "$GITHUB_STEP_SUMMARY"
+          echo "The sync completed and was committed, but see \`tokens/diff-latest.json\` for details." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Fail job if the sync script errored
+        if: steps.sync.outputs.sync_exit_code != '0' && steps.commit.outputs.committed != 'true'
+        run: |
+          echo "sync-figma-tokens.js exited with code ${{ steps.sync.outputs.sync_exit_code }} and nothing was committed - this is a real failure (bad credentials, Figma API error, etc.), not a token diff. Check the 'Sync Figma tokens' step's log above."
           exit 1
