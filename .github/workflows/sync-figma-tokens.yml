@@ -1,0 +1,72 @@
+name: Sync Figma Tokens
+
+# This branch is intentionally isolated: it holds only the files needed to
+# run sync-figma-tokens.js. Trigger it manually from the Actions tab (pick
+# this branch), or via `git push` to this branch.
+#
+# Note: GitHub only fires `schedule` triggers on the repository's default
+# branch, so the cron below stays dormant unless this workflow file also
+# lives on that branch. It's kept here so the schedule is ready to go if
+# that ever changes; workflow_dispatch is the reliable way to run this today.
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - figma-tokens-sync
+    paths-ignore:
+      - "tokens/**"
+  schedule:
+    - cron: "0 0 * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  sync-tokens:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: figma-tokens-sync
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Sync Figma tokens
+        id: sync
+        env:
+          FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
+          FIGMA_FILE_KEY: ${{ secrets.FIGMA_FILE_KEY }}
+          DOTENV_CONFIG_QUIET: "true"
+        run: |
+          set +e
+          node sync-figma-tokens.js
+          CODE=$?
+          set -e
+          echo "sync_exit_code=$CODE" >> "$GITHUB_OUTPUT"
+
+      - name: Commit and push updated tokens
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add tokens/
+          if git diff --cached --quiet; then
+            echo "No token changes to commit."
+          else
+            git commit -m "chore: sync design tokens from Figma"
+            git push origin HEAD:figma-tokens-sync
+          fi
+
+      - name: Fail job if the sync script errored
+        if: steps.sync.outputs.sync_exit_code != '0'
+        run: |
+          echo "sync-figma-tokens.js exited with code ${{ steps.sync.outputs.sync_exit_code }} (non-zero also means breaking token changes were detected - see tokens/diff-latest.json)."
+          exit 1

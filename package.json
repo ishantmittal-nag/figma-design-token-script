@@ -1,0 +1,12 @@
+{
+  "name": "figma-tokens-sync",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "sync": "node sync-figma-tokens.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2"
+  }
+}

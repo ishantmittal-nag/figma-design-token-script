@@ -1,0 +1,73 @@
+{
+  "environment": {
+    "figmaTokenVar": "FIGMA_TOKEN",
+    "figmaFileKeyVar": "FIGMA_FILE_KEY"
+  },
+  "paths": {
+    "outputDir": "./tokens",
+    "snapshotDir": "./tokens/snapshots",
+    "latestJsonFile": "./tokens/variables-latest.json",
+    "latestCssDir": "./tokens/latest"
+  },
+  "naming": {
+    "snapshotFormat": "{timestamp}_{version}",
+    "cssFilePrefix": "",
+    "cssCategoryFiles": true
+  },
+  "css": {
+    "generateIndexCss": true,
+    "groupByCategory": true,
+    "categories": [
+      "colors",
+      "spacing",
+      "radius",
+      "typography",
+      "shadows",
+      "other"
+    ],
+    "units": {
+      "default": "px",
+      "colors": "",
+      "spacing": "px",
+      "radius": "px",
+      "typography": "px",
+      "shadows": "px",
+      "other": "px"
+    },
+    "scopeCategoryMap": {
+      "ALL_FILLS": "colors",
+      "STROKE_COLOR": "colors",
+      "TEXT_FILL": "colors",
+      "CORNER_RADIUS": "radius",
+      "GAP": "spacing",
+      "WIDTH_HEIGHT": "spacing",
+      "FONT_FAMILY": "typography",
+      "FONT_SIZE": "typography",
+      "FONT_WEIGHT": "typography",
+      "FONT_STYLE": "typography",
+      "LINE_HEIGHT": "typography",
+      "LETTER_SPACING": "typography",
+      "PARAGRAPH_SPACING": "typography",
+      "PARAGRAPH_INDENT": "typography",
+      "EFFECT_FLOAT": "shadows",
+      "STROKE_FLOAT": "other",
+      "OPACITY": "other"
+    }
+  },
+  "components": {
+    "outputDir": "./components",
+    "snapshotDir": "./components/snapshots",
+    "latestJsonFile": "./components/components-latest.json",
+    "codeConnectDir": "./src",
+    "componentMap": {}
+  },
+  "figma": {
+    "apiBaseUrl": "https://api.figma.com/v1"
+  },
+  "github": {
+    "prTitle": "chore: design tokens sync",
+    "prBranchPrefix": "design-tokens/",
+    "prLabels": ["design-tokens", "automated"],
+    "commitMessage": "chore: sync design tokens from Figma"
+  }
+}
