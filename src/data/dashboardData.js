@@ -1,3 +1,5 @@
+import { isValidToken } from "../utils/tokenValidator.js"
+
 export const INITIAL_METRICS = {
   totalBalance: 84290.64,
   availableCash: 32640.2,
@@ -29,3 +31,7 @@ export const CHART_DATA = [
   { month: 'JUN', income: 168, expense: 92 },
   { month: 'JUL', income: 155, expense: 84 },
 ]
+
+export function filterInvalidTokens(tokens) {
+  return tokens.filter((token) => !isValidToken(token))
+}
