@@ -16,3 +16,10 @@
   --spacing-9: 24px;
   --spacing-10: 28px;
 }
+
+[data-theme="mode-1"] {
+  --spacing-m: 16px;
+  --spacing-ml: 24px;
+  --spacing-l: 32px;
+  --spacing-xl: 48px;
+}

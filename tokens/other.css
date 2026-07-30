@@ -3,6 +3,13 @@
    Generated from Figma Variables
    ========================================= */
 
+
+[data-theme="mode-1"] {
+  --48: 48px;
+  --24: 24px;
+  --16: 16px;
+  --12: 12px;
+}
 :root {
   --stroke-0: 0px;
   --stroke-1: 1px;
