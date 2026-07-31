@@ -1,0 +1,13 @@
+{
+  "name": "figma-components-sync",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "sync": "node sync-figma-components.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "@figma/code-connect": "^1.4.9"
+  }
+}

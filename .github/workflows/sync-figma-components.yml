@@ -1,0 +1,122 @@
+name: Sync Figma Components
+
+# This branch is intentionally isolated: it holds only the files needed to
+# run sync-figma-components.js. Trigger it manually from the Actions tab
+# (pick this branch), or via `git push` to this branch.
+#
+# Note: GitHub only fires `schedule` triggers on the repository's default
+# branch, so the cron below stays dormant unless this workflow file also
+# lives on that branch. It's kept here so the schedule is ready to go if
+# that ever changes; workflow_dispatch is the reliable way to run this today.
+on:
+  workflow_dispatch:
+    inputs:
+      app_branch:
+        description: "Branch to read src/ from for Code Connect cross-referencing"
+        required: false
+        default: "main"
+  push:
+    branches:
+      - figma-components-sync
+    paths-ignore:
+      - "components/**"
+  schedule:
+    - cron: "0 0 * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  sync-components:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: figma-components-sync
+
+      # Code Connect cross-referencing (getCodeConnectMap in
+      # sync-figma-components.js) only finds anything if *.figma.tsx files
+      # are actually present under src/ - and those files live alongside the
+      # real components on the application branch, not on this isolated
+      # branch. Pulling in just src/ (sparse, read-only, never committed
+      # here) is what makes that part of the sync meaningful in CI instead
+      # of always reporting "unmapped".
+      - name: Checkout app source for Code Connect cross-reference
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.app_branch || 'main' }}
+          sparse-checkout: |
+            src
+          sparse-checkout-cone-mode: false
+          path: _app-src
+
+      - name: Stage app src/ for Code Connect parsing
+        run: |
+          rm -rf src
+          if [ -d _app-src/src ]; then
+            cp -r _app-src/src src
+          else
+            echo "No src/ found on ${{ inputs.app_branch || 'main' }} - continuing without local Code Connect files."
+          fi
+          rm -rf _app-src
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Sync Figma components
+        id: sync
+        env:
+          FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
+          FIGMA_FILE_KEY: ${{ secrets.FIGMA_FILE_KEY }}
+          DOTENV_CONFIG_QUIET: "true"
+        run: |
+          set +e
+          node sync-figma-components.js
+          CODE=$?
+          set -e
+          echo "sync_exit_code=$CODE" >> "$GITHUB_OUTPUT"
+
+      # src/ was only staged locally to give Code Connect something to parse
+      # - it belongs to the app branch, not this one, so it's never added.
+      - name: Commit and push updated components data
+        id: commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add components/
+          if git diff --cached --quiet; then
+            echo "No component changes to commit."
+            echo "committed=false" >> "$GITHUB_OUTPUT"
+          else
+            git commit -m "chore: sync design components from Figma"
+            git push origin HEAD:figma-components-sync
+            echo "committed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # sync-figma-components.js exits non-zero for two different reasons
+      # that need different treatment here: a real error (bad token, API/
+      # network failure) never reaches the file-writing code, so nothing
+      # gets committed above - that's an actual infra failure, fail loud. A
+      # breaking-change diff (e.g. a removed component) DOES write and
+      # commit successfully; that's a legitimate result the sync produced,
+      # not a broken pipeline, so it's surfaced as a summary instead of a
+      # red X.
+      - name: Report breaking changes (non-fatal)
+        if: steps.sync.outputs.sync_exit_code != '0' && steps.commit.outputs.committed == 'true'
+        run: |
+          echo "## ⚠️ Breaking component changes detected" >> "$GITHUB_STEP_SUMMARY"
+          echo "The sync completed and was committed, but see \`components/diff-latest.json\` for details." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Fail job if the sync script errored
+        if: steps.sync.outputs.sync_exit_code != '0' && steps.commit.outputs.committed != 'true'
+        run: |
+          echo "sync-figma-components.js exited with code ${{ steps.sync.outputs.sync_exit_code }} and nothing was committed - this is a real failure (bad credentials, Figma API error, etc.), not a component diff. Check the 'Sync Figma components' step's log above."
+          exit 1

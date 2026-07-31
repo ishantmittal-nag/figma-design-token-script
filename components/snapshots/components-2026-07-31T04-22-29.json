@@ -1,0 +1,534 @@
+{
+  "fileKey": "0fNPEupARJhWxly5BBWOno",
+  "snapshotKey": "2026-07-31T04-22-29",
+  "fetchedAt": "2026-07-31T04:22:29.119Z",
+  "components": {
+    "691a7b199c4a7cbe734e014b082c115f5a1930e3": {
+      "key": "691a7b199c4a7cbe734e014b082c115f5a1930e3",
+      "file_key": "0fNPEupARJhWxly5BBWOno",
+      "node_id": "5:160",
+      "thumbnail_url": "https://s3-alpha.figma.com/checkpoints/GZQ/Iym/coxTkap3N7GzIkck/5_160.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQ4GOSFWC7KKO5RUV%2F20260730%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260730T000000Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=6103d9f3c1d56701b23ed4af850d8b081fa4f79ba6e3a281ced3d094668a51df",
+      "name": "State=Hover",
+      "description": "",
+      "description_rt": "",
+      "created_at": "2026-07-27T07:42:05.246Z",
+      "updated_at": "2026-07-27T07:42:05.246Z",
+      "containing_frame": {
+        "name": "Product Card",
+        "nodeId": "5:162",
+        "pageId": "0:1",
+        "pageName": "Page 1",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "containingStateGroup": {
+          "name": "Product Card",
+          "nodeId": "5:162"
+        },
+        "containingComponentSet": {
+          "name": "Product Card",
+          "nodeId": "5:162"
+        }
+      },
+      "user": {
+        "id": "1033290141611867937",
+        "handle": "Pragati Srivastava",
+        "img_url": "https://www.gravatar.com/avatar/6a923966d05d40b020d27753b938e454?size=240&default=https%3A%2F%2Fs3-alpha.figma.com%2Fstatic%2Fuser_p_v2.png"
+      }
+    },
+    "1efd39c90be272f5d160c1d466e72dea86488117": {
+      "key": "1efd39c90be272f5d160c1d466e72dea86488117",
+      "file_key": "0fNPEupARJhWxly5BBWOno",
+      "node_id": "5:161",
+      "thumbnail_url": "https://s3-alpha.figma.com/checkpoints/HLz/DlY/J999x7FDIrNmtW8M/5_161.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQ4GOSFWC7KKO5RUV%2F20260730%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260730T000000Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=8e0c208565e63c95d7991900f568e0544f40e10e61f8d7f6b602d4c0c64ba50f",
+      "name": "State=Disabled",
+      "description": "",
+      "description_rt": "",
+      "created_at": "2026-07-27T07:42:05.251Z",
+      "updated_at": "2026-07-27T07:42:05.251Z",
+      "containing_frame": {
+        "name": "Product Card",
+        "nodeId": "5:162",
+        "pageId": "0:1",
+        "pageName": "Page 1",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "containingStateGroup": {
+          "name": "Product Card",
+          "nodeId": "5:162"
+        },
+        "containingComponentSet": {
+          "name": "Product Card",
+          "nodeId": "5:162"
+        }
+      },
+      "user": {
+        "id": "1033290141611867937",
+        "handle": "Pragati Srivastava",
+        "img_url": "https://www.gravatar.com/avatar/6a923966d05d40b020d27753b938e454?size=240&default=https%3A%2F%2Fs3-alpha.figma.com%2Fstatic%2Fuser_p_v2.png"
+      }
+    },
+    "2a4e40810e7c910f6303afc28d1938cbde0f9679": {
+      "key": "2a4e40810e7c910f6303afc28d1938cbde0f9679",
+      "file_key": "0fNPEupARJhWxly5BBWOno",
+      "node_id": "5:159",
+      "thumbnail_url": "https://s3-alpha.figma.com/checkpoints/e62/3xJ/t7J9us7fC5wJfVrb/5_159.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQ4GOSFWC7KKO5RUV%2F20260730%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260730T000000Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=6fda3499fcc3a3c4faf7b0fcecc4e1ab4143b8cd5ec093bd0a21861dc846ef60",
+      "name": "State=Default",
+      "description": "",
+      "description_rt": "",
+      "created_at": "2026-07-27T07:42:05.240Z",
+      "updated_at": "2026-07-27T07:42:05.240Z",
+      "containing_frame": {
+        "name": "Product Card",
+        "nodeId": "5:162",
+        "pageId": "0:1",
+        "pageName": "Page 1",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "containingStateGroup": {
+          "name": "Product Card",
+          "nodeId": "5:162"
+        },
+        "containingComponentSet": {
+          "name": "Product Card",
+          "nodeId": "5:162"
+        }
+      },
+      "user": {
+        "id": "1033290141611867937",
+        "handle": "Pragati Srivastava",
+        "img_url": "https://www.gravatar.com/avatar/6a923966d05d40b020d27753b938e454?size=240&default=https%3A%2F%2Fs3-alpha.figma.com%2Fstatic%2Fuser_p_v2.png"
+      }
+    },
+    "21b7775218502c70820ff74857b5c8c031f86346": {
+      "key": "21b7775218502c70820ff74857b5c8c031f86346",
+      "file_key": "0fNPEupARJhWxly5BBWOno",
+      "node_id": "5:36",
+      "thumbnail_url": "https://s3-alpha.figma.com/checkpoints/Apr/1uT/OWryEYFANYlwS9MR/5_36.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQ4GOSFWC7KKO5RUV%2F20260730%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260730T000000Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=834d41d83f2b7202c283d2d54c73c607b9ce0780ab392069d4d1c366ac0ee467",
+      "name": "Type=Image",
+      "description": "",
+      "description_rt": "",
+      "created_at": "2026-07-27T07:42:05.261Z",
+      "updated_at": "2026-07-27T07:42:05.261Z",
+      "containing_frame": {
+        "name": "Card",
+        "nodeId": "5:38",
+        "pageId": "0:1",
+        "pageName": "Page 1",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "containingStateGroup": {
+          "name": "Card",
+          "nodeId": "5:38"
+        },
+        "containingComponentSet": {
+          "name": "Card",
+          "nodeId": "5:38"
+        }
+      },
+      "user": {
+        "id": "1033290141611867937",
+        "handle": "Pragati Srivastava",
+        "img_url": "https://www.gravatar.com/avatar/6a923966d05d40b020d27753b938e454?size=240&default=https%3A%2F%2Fs3-alpha.figma.com%2Fstatic%2Fuser_p_v2.png"
+      }
+    },
+    "f6291d9b44bdeec9aa56eac6cb90c52ce9d4cf77": {
+      "key": "f6291d9b44bdeec9aa56eac6cb90c52ce9d4cf77",
+      "file_key": "0fNPEupARJhWxly5BBWOno",
+      "node_id": "5:37",
+      "thumbnail_url": "https://s3-alpha.figma.com/checkpoints/Hlp/mt9/6eSLT9x4iLN2zP5Q/5_37.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQ4GOSFWC7KKO5RUV%2F20260730%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260730T000000Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=87a25eee72f08f2b2c73d31e206b7d6dd0f90f114b2bc264ac34549903e68c76",
+      "name": "Type=Stat",
+      "description": "",
+      "description_rt": "",
+      "created_at": "2026-07-27T07:42:05.266Z",
+      "updated_at": "2026-07-27T07:42:05.266Z",
+      "containing_frame": {
+        "name": "Card",
+        "nodeId": "5:38",
+        "pageId": "0:1",
+        "pageName": "Page 1",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "containingStateGroup": {
+          "name": "Card",
+          "nodeId": "5:38"
+        },
+        "containingComponentSet": {
+          "name": "Card",
+          "nodeId": "5:38"
+        }
+      },
+      "user": {
+        "id": "1033290141611867937",
+        "handle": "Pragati Srivastava",
+        "img_url": "https://www.gravatar.com/avatar/6a923966d05d40b020d27753b938e454?size=240&default=https%3A%2F%2Fs3-alpha.figma.com%2Fstatic%2Fuser_p_v2.png"
+      }
+    },
+    "10f82911ceca7994e3481b579ed496fe802e8bbd": {
+      "key": "10f82911ceca7994e3481b579ed496fe802e8bbd",
+      "file_key": "0fNPEupARJhWxly5BBWOno",
+      "node_id": "5:35",
+      "thumbnail_url": "https://s3-alpha.figma.com/checkpoints/Ldn/WgS/WULB51DCKZFeaPKS/5_35.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQ4GOSFWC7KKO5RUV%2F20260730%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260730T000000Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=45dd93c33e54e506af2cd7b3b7bee29669559e506def4d92e1bc00705de0cfff",
+      "name": "Type=Basic",
+      "description": "",
+      "description_rt": "",
+      "created_at": "2026-07-27T07:42:05.256Z",
+      "updated_at": "2026-07-27T07:42:05.256Z",
+      "containing_frame": {
+        "name": "Card",
+        "nodeId": "5:38",
+        "pageId": "0:1",
+        "pageName": "Page 1",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "containingStateGroup": {
+          "name": "Card",
+          "nodeId": "5:38"
+        },
+        "containingComponentSet": {
+          "name": "Card",
+          "nodeId": "5:38"
+        }
+      },
+      "user": {
+        "id": "1033290141611867937",
+        "handle": "Pragati Srivastava",
+        "img_url": "https://www.gravatar.com/avatar/6a923966d05d40b020d27753b938e454?size=240&default=https%3A%2F%2Fs3-alpha.figma.com%2Fstatic%2Fuser_p_v2.png"
+      }
+    },
+    "65563006a1b04e7b54689928502338808724fd06": {
+      "key": "65563006a1b04e7b54689928502338808724fd06",
+      "file_key": "0fNPEupARJhWxly5BBWOno",
+      "node_id": "2:64",
+      "thumbnail_url": "https://s3-alpha.figma.com/checkpoints/qeX/ykZ/E8GKFPoNQankM5fw/2_64.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQ4GOSFWC7KKO5RUV%2F20260730%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260730T000000Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=96e71ed9363c04c9b53106e51589b6d81e1e85e3acc07637f9f2d71728565397",
+      "name": "Type=Primary, State=Disabled",
+      "description": "",
+      "description_rt": "",
+      "created_at": "2026-07-27T07:42:05.306Z",
+      "updated_at": "2026-07-27T07:42:05.306Z",
+      "containing_frame": {
+        "name": "Button",
+        "nodeId": "2:72",
+        "pageId": "0:1",
+        "pageName": "Page 1",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "containingStateGroup": {
+          "name": "Button",
+          "nodeId": "2:72"
+        },
+        "containingComponentSet": {
+          "name": "Button",
+          "nodeId": "2:72"
+        }
+      },
+      "user": {
+        "id": "1033290141611867937",
+        "handle": "Pragati Srivastava",
+        "img_url": "https://www.gravatar.com/avatar/6a923966d05d40b020d27753b938e454?size=240&default=https%3A%2F%2Fs3-alpha.figma.com%2Fstatic%2Fuser_p_v2.png"
+      }
+    },
+    "68c9c3fbfd8afbfb6823313d9323861be232b46b": {
+      "key": "68c9c3fbfd8afbfb6823313d9323861be232b46b",
+      "file_key": "0fNPEupARJhWxly5BBWOno",
+      "node_id": "2:66",
+      "thumbnail_url": "https://s3-alpha.figma.com/checkpoints/17z/F4F/1erLGAvwYadPTqNe/2_66.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQ4GOSFWC7KKO5RUV%2F20260730%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260730T000000Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=c4a2e007c23abc0f4952291be92ad29d894993b47c6e74889ab5954c207b2577",
+      "name": "Type=Secondary, State=Default",
+      "description": "",
+      "description_rt": "",
+      "created_at": "2026-07-27T07:42:05.310Z",
+      "updated_at": "2026-07-27T07:42:05.310Z",
+      "containing_frame": {
+        "name": "Button",
+        "nodeId": "2:72",
+        "pageId": "0:1",
+        "pageName": "Page 1",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "containingStateGroup": {
+          "name": "Button",
+          "nodeId": "2:72"
+        },
+        "containingComponentSet": {
+          "name": "Button",
+          "nodeId": "2:72"
+        }
+      },
+      "user": {
+        "id": "1033290141611867937",
+        "handle": "Pragati Srivastava",
+        "img_url": "https://www.gravatar.com/avatar/6a923966d05d40b020d27753b938e454?size=240&default=https%3A%2F%2Fs3-alpha.figma.com%2Fstatic%2Fuser_p_v2.png"
+      }
+    },
+    "8ee3702820a020e9facb3c97d441ab0b02229fff": {
+      "key": "8ee3702820a020e9facb3c97d441ab0b02229fff",
+      "file_key": "0fNPEupARJhWxly5BBWOno",
+      "node_id": "4:2",
+      "thumbnail_url": "https://s3-alpha.figma.com/checkpoints/Hdi/TXB/o4rfeUpuogZGlymU/4_2.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQ4GOSFWC7KKO5RUV%2F20260730%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260730T000000Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=86e1a379aad365eec03fd3cf92b58b9f8d82dfa0d3ed544e5f1db4857595d658",
+      "name": "State=Default",
+      "description": "",
+      "description_rt": "",
+      "created_at": "2026-07-27T07:42:05.271Z",
+      "updated_at": "2026-07-27T07:42:05.271Z",
+      "containing_frame": {
+        "name": "Input Field",
+        "nodeId": "4:23",
+        "pageId": "0:1",
+        "pageName": "Page 1",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "containingStateGroup": {
+          "name": "Input Field",
+          "nodeId": "4:23"
+        },
+        "containingComponentSet": {
+          "name": "Input Field",
+          "nodeId": "4:23"
+        }
+      },
+      "user": {
+        "id": "1033290141611867937",
+        "handle": "Pragati Srivastava",
+        "img_url": "https://www.gravatar.com/avatar/6a923966d05d40b020d27753b938e454?size=240&default=https%3A%2F%2Fs3-alpha.figma.com%2Fstatic%2Fuser_p_v2.png"
+      }
+    },
+    "40d908e7a6dee26ac82615616ed2c45d9d0aedff": {
+      "key": "40d908e7a6dee26ac82615616ed2c45d9d0aedff",
+      "file_key": "0fNPEupARJhWxly5BBWOno",
+      "node_id": "4:6",
+      "thumbnail_url": "https://s3-alpha.figma.com/checkpoints/yK6/ysx/MvxJL1mEQyDaQSSp/4_6.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQ4GOSFWC7KKO5RUV%2F20260730%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260730T000000Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=89b625d32a8f9b3676393f0c664f408d0b90a538d1f49be7572caf80837b1e1b",
+      "name": "State=Filled",
+      "description": "",
+      "description_rt": "",
+      "created_at": "2026-07-27T07:42:05.276Z",
+      "updated_at": "2026-07-27T07:42:05.276Z",
+      "containing_frame": {
+        "name": "Input Field",
+        "nodeId": "4:23",
+        "pageId": "0:1",
+        "pageName": "Page 1",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "containingStateGroup": {
+          "name": "Input Field",
+          "nodeId": "4:23"
+        },
+        "containingComponentSet": {
+          "name": "Input Field",
+          "nodeId": "4:23"
+        }
+      },
+      "user": {
+        "id": "1033290141611867937",
+        "handle": "Pragati Srivastava",
+        "img_url": "https://www.gravatar.com/avatar/6a923966d05d40b020d27753b938e454?size=240&default=https%3A%2F%2Fs3-alpha.figma.com%2Fstatic%2Fuser_p_v2.png"
+      }
+    },
+    "d19bb74956b6c5fbdce143571f408429b4364c0b": {
+      "key": "d19bb74956b6c5fbdce143571f408429b4364c0b",
+      "file_key": "0fNPEupARJhWxly5BBWOno",
+      "node_id": "4:10",
+      "thumbnail_url": "https://s3-alpha.figma.com/checkpoints/Qs1/oVX/0kmI5iavsun6XTE7/4_10.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQ4GOSFWC7KKO5RUV%2F20260730%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260730T000000Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=41d26c70c80dbcd7d5f06a346c90a1d79b53799a7db97570e9cb35cc90421034",
+      "name": "State=Active",
+      "description": "",
+      "description_rt": "",
+      "created_at": "2026-07-27T07:42:05.281Z",
+      "updated_at": "2026-07-27T07:42:05.281Z",
+      "containing_frame": {
+        "name": "Input Field",
+        "nodeId": "4:23",
+        "pageId": "0:1",
+        "pageName": "Page 1",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "containingStateGroup": {
+          "name": "Input Field",
+          "nodeId": "4:23"
+        },
+        "containingComponentSet": {
+          "name": "Input Field",
+          "nodeId": "4:23"
+        }
+      },
+      "user": {
+        "id": "1033290141611867937",
+        "handle": "Pragati Srivastava",
+        "img_url": "https://www.gravatar.com/avatar/6a923966d05d40b020d27753b938e454?size=240&default=https%3A%2F%2Fs3-alpha.figma.com%2Fstatic%2Fuser_p_v2.png"
+      }
+    },
+    "894f81951e65d08f62ddba4f2225da7d75cccfa6": {
+      "key": "894f81951e65d08f62ddba4f2225da7d75cccfa6",
+      "file_key": "0fNPEupARJhWxly5BBWOno",
+      "node_id": "2:68",
+      "thumbnail_url": "https://s3-alpha.figma.com/checkpoints/79c/Ggo/54aiG3KLgLkVTsRF/2_68.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQ4GOSFWC7KKO5RUV%2F20260730%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260730T000000Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=bb197ecdf3f8a53832a95a9516131f33474eda0e90d4e4a54e137c911e00cf5f",
+      "name": "Type=Secondary, State=Hover",
+      "description": "",
+      "description_rt": "",
+      "created_at": "2026-07-27T07:42:05.315Z",
+      "updated_at": "2026-07-27T07:42:05.315Z",
+      "containing_frame": {
+        "name": "Button",
+        "nodeId": "2:72",
+        "pageId": "0:1",
+        "pageName": "Page 1",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "containingStateGroup": {
+          "name": "Button",
+          "nodeId": "2:72"
+        },
+        "containingComponentSet": {
+          "name": "Button",
+          "nodeId": "2:72"
+        }
+      },
+      "user": {
+        "id": "1033290141611867937",
+        "handle": "Pragati Srivastava",
+        "img_url": "https://www.gravatar.com/avatar/6a923966d05d40b020d27753b938e454?size=240&default=https%3A%2F%2Fs3-alpha.figma.com%2Fstatic%2Fuser_p_v2.png"
+      }
+    },
+    "ff6d77546fddd28f6fedf1b1bb68e8e3ce46ef60": {
+      "key": "ff6d77546fddd28f6fedf1b1bb68e8e3ce46ef60",
+      "file_key": "0fNPEupARJhWxly5BBWOno",
+      "node_id": "4:14",
+      "thumbnail_url": "https://s3-alpha.figma.com/checkpoints/mVU/Wg3/8nB8ihZPQH2QMIca/4_14.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQ4GOSFWC7KKO5RUV%2F20260730%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260730T000000Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=c3c37bc4df09995e5870814af9aca9a5edc7aba6a6f176294d2b41879d82a643",
+      "name": "State=Disabled",
+      "description": "",
+      "description_rt": "",
+      "created_at": "2026-07-27T07:42:05.286Z",
+      "updated_at": "2026-07-27T07:42:05.286Z",
+      "containing_frame": {
+        "name": "Input Field",
+        "nodeId": "4:23",
+        "pageId": "0:1",
+        "pageName": "Page 1",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "containingStateGroup": {
+          "name": "Input Field",
+          "nodeId": "4:23"
+        },
+        "containingComponentSet": {
+          "name": "Input Field",
+          "nodeId": "4:23"
+        }
+      },
+      "user": {
+        "id": "1033290141611867937",
+        "handle": "Pragati Srivastava",
+        "img_url": "https://www.gravatar.com/avatar/6a923966d05d40b020d27753b938e454?size=240&default=https%3A%2F%2Fs3-alpha.figma.com%2Fstatic%2Fuser_p_v2.png"
+      }
+    },
+    "f4cb0f146bab219185c352e23d2291ce1c1fc42f": {
+      "key": "f4cb0f146bab219185c352e23d2291ce1c1fc42f",
+      "file_key": "0fNPEupARJhWxly5BBWOno",
+      "node_id": "4:18",
+      "thumbnail_url": "https://s3-alpha.figma.com/checkpoints/bL9/G08/yK3cdiM9SWz6MOLR/4_18.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQ4GOSFWC7KKO5RUV%2F20260730%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260730T000000Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=2a6b6dab383c6472884b2ec480ee7d07324008eaa90dcc94e28f014562cec0f4",
+      "name": "State=Error",
+      "description": "",
+      "description_rt": "",
+      "created_at": "2026-07-27T07:42:05.291Z",
+      "updated_at": "2026-07-27T07:42:05.291Z",
+      "containing_frame": {
+        "name": "Input Field",
+        "nodeId": "4:23",
+        "pageId": "0:1",
+        "pageName": "Page 1",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "containingStateGroup": {
+          "name": "Input Field",
+          "nodeId": "4:23"
+        },
+        "containingComponentSet": {
+          "name": "Input Field",
+          "nodeId": "4:23"
+        }
+      },
+      "user": {
+        "id": "1033290141611867937",
+        "handle": "Pragati Srivastava",
+        "img_url": "https://www.gravatar.com/avatar/6a923966d05d40b020d27753b938e454?size=240&default=https%3A%2F%2Fs3-alpha.figma.com%2Fstatic%2Fuser_p_v2.png"
+      }
+    },
+    "59468a5869cb35cc7fc739b9988bc72c1bba9cab": {
+      "key": "59468a5869cb35cc7fc739b9988bc72c1bba9cab",
+      "file_key": "0fNPEupARJhWxly5BBWOno",
+      "node_id": "2:60",
+      "thumbnail_url": "https://s3-alpha.figma.com/checkpoints/dgM/kmr/ofqUHufNpYl9d1xc/2_60.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQ4GOSFWC7KKO5RUV%2F20260730%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260730T000000Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=07d0afb719766a9ca1f0d7b2be015b9d2c7a980e981e4a7fa7b381992b595619",
+      "name": "Type=Primary, State=Default",
+      "description": "",
+      "description_rt": "",
+      "created_at": "2026-07-27T07:42:05.296Z",
+      "updated_at": "2026-07-27T07:42:05.296Z",
+      "containing_frame": {
+        "name": "Button",
+        "nodeId": "2:72",
+        "pageId": "0:1",
+        "pageName": "Page 1",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "containingStateGroup": {
+          "name": "Button",
+          "nodeId": "2:72"
+        },
+        "containingComponentSet": {
+          "name": "Button",
+          "nodeId": "2:72"
+        }
+      },
+      "user": {
+        "id": "1033290141611867937",
+        "handle": "Pragati Srivastava",
+        "img_url": "https://www.gravatar.com/avatar/6a923966d05d40b020d27753b938e454?size=240&default=https%3A%2F%2Fs3-alpha.figma.com%2Fstatic%2Fuser_p_v2.png"
+      }
+    },
+    "b0dfb57dd03b7106d5b1afadd4dd252bf6d92a55": {
+      "key": "b0dfb57dd03b7106d5b1afadd4dd252bf6d92a55",
+      "file_key": "0fNPEupARJhWxly5BBWOno",
+      "node_id": "2:62",
+      "thumbnail_url": "https://s3-alpha.figma.com/checkpoints/bNs/Cr6/0iwFj2x7RW3yFKa4/2_62.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQ4GOSFWC7KKO5RUV%2F20260730%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260730T000000Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=410cbdbc734964fbd4b09568b4437387edc952e3665c483f82c0b38e806445ba",
+      "name": "Type=Primary, State=Hover",
+      "description": "",
+      "description_rt": "",
+      "created_at": "2026-07-27T07:42:05.300Z",
+      "updated_at": "2026-07-27T07:42:05.300Z",
+      "containing_frame": {
+        "name": "Button",
+        "nodeId": "2:72",
+        "pageId": "0:1",
+        "pageName": "Page 1",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "containingStateGroup": {
+          "name": "Button",
+          "nodeId": "2:72"
+        },
+        "containingComponentSet": {
+          "name": "Button",
+          "nodeId": "2:72"
+        }
+      },
+      "user": {
+        "id": "1033290141611867937",
+        "handle": "Pragati Srivastava",
+        "img_url": "https://www.gravatar.com/avatar/6a923966d05d40b020d27753b938e454?size=240&default=https%3A%2F%2Fs3-alpha.figma.com%2Fstatic%2Fuser_p_v2.png"
+      }
+    },
+    "0bace4d308f86c97c123d28b66e7f1818d444582": {
+      "key": "0bace4d308f86c97c123d28b66e7f1818d444582",
+      "file_key": "0fNPEupARJhWxly5BBWOno",
+      "node_id": "2:70",
+      "thumbnail_url": "https://s3-alpha.figma.com/checkpoints/FZV/ewf/02qnbY5BE4Td9TXG/2_70.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQ4GOSFWC7KKO5RUV%2F20260730%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260730T000000Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=c205b68dbe54874a4d92e7628eeffe25203dc9b51da1da61c8bd4b2631eb99e4",
+      "name": "Type=Secondary, State=Disabled",
+      "description": "",
+      "description_rt": "",
+      "created_at": "2026-07-27T07:42:05.320Z",
+      "updated_at": "2026-07-27T07:42:05.320Z",
+      "containing_frame": {
+        "name": "Button",
+        "nodeId": "2:72",
+        "pageId": "0:1",
+        "pageName": "Page 1",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "containingStateGroup": {
+          "name": "Button",
+          "nodeId": "2:72"
+        },
+        "containingComponentSet": {
+          "name": "Button",
+          "nodeId": "2:72"
+        }
+      },
+      "user": {
+        "id": "1033290141611867937",
+        "handle": "Pragati Srivastava",
+        "img_url": "https://www.gravatar.com/avatar/6a923966d05d40b020d27753b938e454?size=240&default=https%3A%2F%2Fs3-alpha.figma.com%2Fstatic%2Fuser_p_v2.png"
+      }
+    }
+  }
+}
