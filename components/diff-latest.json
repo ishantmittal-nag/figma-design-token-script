@@ -1,18 +1,266 @@
 {
-  "timestamp": "2026-07-31T04:22:50.630Z",
-  "snapshotKey": "2026-07-31T04-22-44",
+  "timestamp": "2026-07-31T04:24:51.014Z",
+  "snapshotKey": "2026-07-31T04-24-48",
   "summary": {
     "added": 0,
-    "removed": 0,
+    "removed": 17,
     "modified": 0,
     "renamed": 0,
-    "breakingChanges": 0
+    "breakingChanges": 1
   },
   "changes": {
     "added": [],
-    "removed": [],
+    "removed": [
+      {
+        "key": "691a7b199c4a7cbe734e014b082c115f5a1930e3",
+        "name": "State=Hover",
+        "nodeId": "5:160",
+        "codeLocation": null,
+        "mappingSource": "unmapped"
+      },
+      {
+        "key": "1efd39c90be272f5d160c1d466e72dea86488117",
+        "name": "State=Disabled",
+        "nodeId": "5:161",
+        "codeLocation": null,
+        "mappingSource": "unmapped"
+      },
+      {
+        "key": "2a4e40810e7c910f6303afc28d1938cbde0f9679",
+        "name": "State=Default",
+        "nodeId": "5:159",
+        "codeLocation": null,
+        "mappingSource": "unmapped"
+      },
+      {
+        "key": "21b7775218502c70820ff74857b5c8c031f86346",
+        "name": "Type=Image",
+        "nodeId": "5:36",
+        "codeLocation": null,
+        "mappingSource": "unmapped"
+      },
+      {
+        "key": "f6291d9b44bdeec9aa56eac6cb90c52ce9d4cf77",
+        "name": "Type=Stat",
+        "nodeId": "5:37",
+        "codeLocation": null,
+        "mappingSource": "unmapped"
+      },
+      {
+        "key": "10f82911ceca7994e3481b579ed496fe802e8bbd",
+        "name": "Type=Basic",
+        "nodeId": "5:35",
+        "codeLocation": null,
+        "mappingSource": "unmapped"
+      },
+      {
+        "key": "65563006a1b04e7b54689928502338808724fd06",
+        "name": "Type=Primary, State=Disabled",
+        "nodeId": "2:64",
+        "codeLocation": null,
+        "mappingSource": "unmapped"
+      },
+      {
+        "key": "68c9c3fbfd8afbfb6823313d9323861be232b46b",
+        "name": "Type=Secondary, State=Default",
+        "nodeId": "2:66",
+        "codeLocation": null,
+        "mappingSource": "unmapped"
+      },
+      {
+        "key": "8ee3702820a020e9facb3c97d441ab0b02229fff",
+        "name": "State=Default",
+        "nodeId": "4:2",
+        "codeLocation": null,
+        "mappingSource": "unmapped"
+      },
+      {
+        "key": "40d908e7a6dee26ac82615616ed2c45d9d0aedff",
+        "name": "State=Filled",
+        "nodeId": "4:6",
+        "codeLocation": null,
+        "mappingSource": "unmapped"
+      },
+      {
+        "key": "d19bb74956b6c5fbdce143571f408429b4364c0b",
+        "name": "State=Active",
+        "nodeId": "4:10",
+        "codeLocation": null,
+        "mappingSource": "unmapped"
+      },
+      {
+        "key": "894f81951e65d08f62ddba4f2225da7d75cccfa6",
+        "name": "Type=Secondary, State=Hover",
+        "nodeId": "2:68",
+        "codeLocation": null,
+        "mappingSource": "unmapped"
+      },
+      {
+        "key": "ff6d77546fddd28f6fedf1b1bb68e8e3ce46ef60",
+        "name": "State=Disabled",
+        "nodeId": "4:14",
+        "codeLocation": null,
+        "mappingSource": "unmapped"
+      },
+      {
+        "key": "f4cb0f146bab219185c352e23d2291ce1c1fc42f",
+        "name": "State=Error",
+        "nodeId": "4:18",
+        "codeLocation": null,
+        "mappingSource": "unmapped"
+      },
+      {
+        "key": "59468a5869cb35cc7fc739b9988bc72c1bba9cab",
+        "name": "Type=Primary, State=Default",
+        "nodeId": "2:60",
+        "codeLocation": null,
+        "mappingSource": "unmapped"
+      },
+      {
+        "key": "b0dfb57dd03b7106d5b1afadd4dd252bf6d92a55",
+        "name": "Type=Primary, State=Hover",
+        "nodeId": "2:62",
+        "codeLocation": null,
+        "mappingSource": "unmapped"
+      },
+      {
+        "key": "0bace4d308f86c97c123d28b66e7f1818d444582",
+        "name": "Type=Secondary, State=Disabled",
+        "nodeId": "2:70",
+        "codeLocation": null,
+        "mappingSource": "unmapped"
+      }
+    ],
     "modified": [],
     "renamed": []
   },
-  "breakingChanges": []
+  "breakingChanges": [
+    {
+      "type": "REMOVED_COMPONENTS",
+      "severity": "high",
+      "count": 17,
+      "items": [
+        {
+          "key": "691a7b199c4a7cbe734e014b082c115f5a1930e3",
+          "name": "State=Hover",
+          "nodeId": "5:160",
+          "codeLocation": null,
+          "mappingSource": "unmapped"
+        },
+        {
+          "key": "1efd39c90be272f5d160c1d466e72dea86488117",
+          "name": "State=Disabled",
+          "nodeId": "5:161",
+          "codeLocation": null,
+          "mappingSource": "unmapped"
+        },
+        {
+          "key": "2a4e40810e7c910f6303afc28d1938cbde0f9679",
+          "name": "State=Default",
+          "nodeId": "5:159",
+          "codeLocation": null,
+          "mappingSource": "unmapped"
+        },
+        {
+          "key": "21b7775218502c70820ff74857b5c8c031f86346",
+          "name": "Type=Image",
+          "nodeId": "5:36",
+          "codeLocation": null,
+          "mappingSource": "unmapped"
+        },
+        {
+          "key": "f6291d9b44bdeec9aa56eac6cb90c52ce9d4cf77",
+          "name": "Type=Stat",
+          "nodeId": "5:37",
+          "codeLocation": null,
+          "mappingSource": "unmapped"
+        },
+        {
+          "key": "10f82911ceca7994e3481b579ed496fe802e8bbd",
+          "name": "Type=Basic",
+          "nodeId": "5:35",
+          "codeLocation": null,
+          "mappingSource": "unmapped"
+        },
+        {
+          "key": "65563006a1b04e7b54689928502338808724fd06",
+          "name": "Type=Primary, State=Disabled",
+          "nodeId": "2:64",
+          "codeLocation": null,
+          "mappingSource": "unmapped"
+        },
+        {
+          "key": "68c9c3fbfd8afbfb6823313d9323861be232b46b",
+          "name": "Type=Secondary, State=Default",
+          "nodeId": "2:66",
+          "codeLocation": null,
+          "mappingSource": "unmapped"
+        },
+        {
+          "key": "8ee3702820a020e9facb3c97d441ab0b02229fff",
+          "name": "State=Default",
+          "nodeId": "4:2",
+          "codeLocation": null,
+          "mappingSource": "unmapped"
+        },
+        {
+          "key": "40d908e7a6dee26ac82615616ed2c45d9d0aedff",
+          "name": "State=Filled",
+          "nodeId": "4:6",
+          "codeLocation": null,
+          "mappingSource": "unmapped"
+        },
+        {
+          "key": "d19bb74956b6c5fbdce143571f408429b4364c0b",
+          "name": "State=Active",
+          "nodeId": "4:10",
+          "codeLocation": null,
+          "mappingSource": "unmapped"
+        },
+        {
+          "key": "894f81951e65d08f62ddba4f2225da7d75cccfa6",
+          "name": "Type=Secondary, State=Hover",
+          "nodeId": "2:68",
+          "codeLocation": null,
+          "mappingSource": "unmapped"
+        },
+        {
+          "key": "ff6d77546fddd28f6fedf1b1bb68e8e3ce46ef60",
+          "name": "State=Disabled",
+          "nodeId": "4:14",
+          "codeLocation": null,
+          "mappingSource": "unmapped"
+        },
+        {
+          "key": "f4cb0f146bab219185c352e23d2291ce1c1fc42f",
+          "name": "State=Error",
+          "nodeId": "4:18",
+          "codeLocation": null,
+          "mappingSource": "unmapped"
+        },
+        {
+          "key": "59468a5869cb35cc7fc739b9988bc72c1bba9cab",
+          "name": "Type=Primary, State=Default",
+          "nodeId": "2:60",
+          "codeLocation": null,
+          "mappingSource": "unmapped"
+        },
+        {
+          "key": "b0dfb57dd03b7106d5b1afadd4dd252bf6d92a55",
+          "name": "Type=Primary, State=Hover",
+          "nodeId": "2:62",
+          "codeLocation": null,
+          "mappingSource": "unmapped"
+        },
+        {
+          "key": "0bace4d308f86c97c123d28b66e7f1818d444582",
+          "name": "Type=Secondary, State=Disabled",
+          "nodeId": "2:70",
+          "codeLocation": null,
+          "mappingSource": "unmapped"
+        }
+      ],
+      "message": "17 component(s) removed"
+    }
+  ]
 }
