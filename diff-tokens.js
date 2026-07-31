@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { getCached, setCached } from "./src/utils/tokenCache.js";
 
 // ==================================================
 // Load JSON Snapshots
@@ -406,8 +407,8 @@ async function main() {
         // Get latest two snapshots
         const [latestPath, previousPath] = getLatestSnapshots(snapshotDir);
 
-        const latestSnapshot = loadSnapshot(latestPath);
-        const previousSnapshot = loadSnapshot(previousPath);
+        const latestSnapshot = getCached("diff", latestPath) || loadSnapshot(latestPath);
+        const previousSnapshot = getCached("diff", previousPath) || loadSnapshot(previousPath);
 
         console.log(`Previous: ${path.basename(previousPath)}`);
         console.log(`Latest:   ${path.basename(latestPath)}\n`);
