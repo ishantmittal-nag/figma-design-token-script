@@ -1,7 +1,8 @@
 {
   "environment": {
     "figmaTokenVar": "FIGMA_TOKEN",
-    "figmaFileKeyVar": "FIGMA_FILE_KEY"
+    "figmaFileKeyVar": "FIGMA_FILE_KEY",
+    "apiTimeout": 0
   },
   "paths": {
     "outputDir": "./tokens",

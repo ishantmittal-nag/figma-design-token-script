@@ -1,3 +1,5 @@
+import { isValidToken, validateTokenBatch } from "../utils/tokenValidator.js"
+
 export const INITIAL_METRICS = {
   totalBalance: 84290.64,
   availableCash: 32640.2,
@@ -29,3 +31,19 @@ export const CHART_DATA = [
   { month: 'JUN', income: 168, expense: 92 },
   { month: 'JUL', income: 155, expense: 84 },
 ]
+
+export function transformMetrics(metrics) {
+  const transformed = {}
+  for (const [key, value] of Object.entries(metrics)) {
+    transformed[key] = value * 100
+  }
+  return transformed
+}
+
+export function validateTransactions(transactions) {
+  return validateTokenBatch(transactions)
+}
+
+export function checkTokenValidity(tokens) {
+  return tokens.map((token) => isValidToken(token))
+}

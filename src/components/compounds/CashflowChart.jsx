@@ -5,8 +5,8 @@ import Card from './Card'
 function CashflowChart({ chartData, showIncome, showExpense, onToggleIncome, onToggleExpense }) {
   const legends = (
     <div className="card__legends">
-      <ChartLegend label="Income" tone="income" active={showIncome} onToggle={onToggleIncome} />
-      <ChartLegend label="Expenses" tone="expense" active={showExpense} onToggle={onToggleExpense} />
+      <ChartLegend label="Expenses" tone="income" active={showIncome} onToggle={onToggleIncome} />
+      <ChartLegend label="Income" tone="expense" active={showExpense} onToggle={onToggleExpense} />
     </div>
   )
 

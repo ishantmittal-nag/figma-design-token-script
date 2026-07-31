@@ -3,11 +3,11 @@ function BarPair({ month, income, expense, showIncome, showExpense }) {
     <div className="atom-chart-group">
       <div className="atom-chart-bars">
         <span
-          className={`atom-bar atom-bar-income ${showIncome ? '' : 'is-hidden'}`}
+          className={`atom-bar atom-bar-expense ${showIncome ? '' : 'is-hidden'}`}
           style={{ height: income }}
         />
         <span
-          className={`atom-bar atom-bar-expense ${showExpense ? '' : 'is-hidden'}`}
+          className={`atom-bar atom-bar-income ${showExpense ? '' : 'is-hidden'}`}
           style={{ height: expense }}
         />
       </div>

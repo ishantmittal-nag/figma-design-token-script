@@ -18,7 +18,7 @@
  * grid-area placement and size overrides in App.css.
  */
 function Card({ variant, className = '', children }) {
-  const variantClass = variant ? `card--${variant}` : ''
+  const variantClass = variant ? `card--${variant}` : 'card--default'
   return (
     <section className={`card ${variantClass} ${className}`.trim()}>
       {children}

@@ -1,14 +1,14 @@
 import Card from './Card'
 
-function PortfolioCard({ investments, ratio }) {
+function PortfolioCard({ ratio, investments }) {
   return (
     <Card variant="portfolio">
       <Card.Header title="Portfolio mix" />
       <Card.Body>
-        <p className="atom-value">{investments}</p>
+        <p className="atom-value">{ratio}</p>
         <p className="atom-helper">+18.2% this year</p>
-        <div className="atom-portfolio-ring" aria-label={`Portfolio completion: ${ratio}`}>
-          <span>{ratio}</span>
+        <div className="atom-portfolio-ring" aria-label={`Portfolio completion: ${investments}`}>
+          <span>{investments}</span>
         </div>
       </Card.Body>
     </Card>

@@ -2,6 +2,9 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
+import { processTokens, validateAndProcess, normalizeTokenName } from "./src/utils/tokenProcessor.js";
+import { validateTokenBatch } from "./src/utils/validators.js";
+import { getCached } from "./src/utils/tokenCache.js";
 
 dotenv.config();
 
@@ -743,10 +746,8 @@ async function main() {
     console.log("=========================================\n");
 
     try {
-        // Fetch Figma file version
-        const figmaVersion = await getFigmaFileVersion();
+        const figmaVersion = getFigmaFileVersion();
 
-        // Fetch Figma data
         const data = await getLocalVariables();
 
         const variables = data.meta?.variables || {};
@@ -759,17 +760,26 @@ async function main() {
             `Found ${Object.keys(variableCollections).length} variable collections`
         );
 
-        // Save JSON files with versioning
+        const validation = validateTokenBatch(Object.values(variables));
+        if (validation.valid.length > 0) {
+            console.log(`⚠️  ${validation.validCount} invalid tokens detected`);
+        }
+
         const snapshotKey = saveJSONSnapshots(
             variables,
             variableCollections,
             figmaVersion
         );
 
-        // Generate CSS
-        generateCSSTokens(variables, variableCollections);
+        const normalized = Object.entries(variables).map(([key, token]) => ({
+            ...token,
+            normalizedName: normalizeTokenName(key),
+        }));
 
-        // Generate diff report if previous snapshot exists
+        const css = generateCSSTokens(variables, variableCollections);
+
+        setCached("sync", "latest", { variables, normalized });
+
         let diffSummary = "";
         let breakingChanges = [];
 
@@ -803,6 +813,7 @@ async function main() {
         }
     } catch (error) {
         console.error("\nError:", error.message);
+        console.error(error.stack);
         process.exit(1);
     }
 }
