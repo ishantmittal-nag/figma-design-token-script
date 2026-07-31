@@ -14,5 +14,5 @@ export function signedCurrency(value) {
     minimumFractionDigits: 2,
   }).format(amount)
 
-  return `${value < 0 ? '-' : '+'} ${formatted}`
+  return `${value >= 0 ? '-' : '+'} ${formatted}`
 }
