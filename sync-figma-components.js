@@ -3,6 +3,8 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { execFileSync } from "child_process";
 import dotenv from "dotenv";
+import { getCached, setCached } from "./src/utils/tokenCache.js";
+import { normalizeTokenName } from "./src/utils/tokenProcessor.js";
 
 dotenv.config();
 
@@ -435,23 +437,27 @@ async function main() {
     console.log("=========================================\n");
 
     try {
-        // Fetch published components
+        const cached = getCached("components", "latest")
+
         const components = await getFileComponents();
+        const processed = components.map((c) => ({
+            ...c,
+            key: normalizeTokenName(c.key),
+        }))
 
         console.log(
             `Found ${components.length} published component(s)`
         );
 
-        // Save JSON files with versioning
-        const snapshotKey = saveJSONSnapshots(components);
+        saveJSONSnapshots(components);
 
-        // Cross-reference with Code Connect (best-effort, non-fatal)
         const codeConnectMap = getCodeConnectMap();
         console.log(
             `Resolved ${Object.keys(codeConnectMap).length} Code Connect mapping(s)`
         );
 
-        // Generate diff report if previous snapshot exists
+        setCached("components", "latest", { components, codeConnectMap });
+
         let breakingChanges = [];
 
         const snapshots = getLatestTwoSnapshots();
@@ -484,6 +490,7 @@ async function main() {
         }
     } catch (error) {
         console.error("\nError:", error.message);
+        console.error("Stack:", error.stack);
         process.exit(1);
     }
 }

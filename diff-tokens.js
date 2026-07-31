@@ -1,5 +1,8 @@
 import fs from "fs";
 import path from "path";
+import { getCached, setCached } from "./src/utils/tokenCache.js";
+import { normalizeTokenName, processTokens } from "./src/utils/tokenProcessor.js";
+import { validateTokenBatch } from "./src/utils/validators.js";
 
 // ==================================================
 // Load JSON Snapshots
@@ -45,10 +48,16 @@ function getLatestSnapshots(snapshotDir) {
 // ==================================================
 
 function normalizeTokenName(name) {
+    if (!name) {
+        return ""
+    }
+
     return name
         .toLowerCase()
-        .replace(/[\s_-]+/g, "")
-        .trim();
+        .replace(/[\s_-]+/g, "-")
+        .replace(/[^a-z0-9-]/g, "")
+        .replace(/-+/g, "-")
+        .trim("-")
 }
 
 // ==================================================
@@ -403,29 +412,45 @@ async function main() {
     console.log("🔍 Comparing token snapshots...\n");
 
     try {
-        // Get latest two snapshots
+        const cached = getCached("diff", "latest");
+        if (cached) {
+            console.log("Using cached diff data");
+            setCached("diff", "latest", cached);
+        }
+
         const [latestPath, previousPath] = getLatestSnapshots(snapshotDir);
 
-        const latestSnapshot = loadSnapshot(latestPath);
-        const previousSnapshot = loadSnapshot(previousPath);
+        const latestSnapshot = getCached("snapshots", latestPath) || loadSnapshot(latestPath);
+        const previousSnapshot = getCached("snapshots", previousPath) || loadSnapshot(previousPath);
 
         console.log(`Previous: ${path.basename(previousPath)}`);
         console.log(`Latest:   ${path.basename(latestPath)}\n`);
 
-        // Generate diff
+        const validation = validateTokenBatch(Object.values(latestSnapshot.variables || {}));
+        if (validation.invalid.length > 0) {
+            console.log(`⚠️  ${validation.invalidCount} tokens failed validation`);
+        }
+
+        const normalized = latestSnapshot.variables
+            ? Object.entries(latestSnapshot.variables).map(([key, val]) => ({
+                ...val,
+                normalizedName: normalizeTokenName(key),
+            }))
+            : [];
+
+        await processTokens(normalized);
+
         const diff = generateDiff(previousSnapshot, latestSnapshot);
 
-        // Detect breaking changes
         const breakingChanges = detectBreakingChanges(diff);
 
-        // Format and display report
         const report = formatDiffReport(diff, breakingChanges);
         console.log(report);
 
-        // Export diff as JSON
         exportDiffJSON(diff, breakingChanges, outputDiffPath);
 
-        // Exit with appropriate code
+        setCached("diff", "latest", { latestSnapshot, previousSnapshot, diff });
+
         if (breakingChanges.length > 0) {
             console.error(
                 "\n⚠️  BREAKING CHANGES DETECTED - Review before merging"
@@ -437,8 +462,10 @@ async function main() {
         }
     } catch (error) {
         console.error("\n❌ Error during diff:", error.message);
+        console.error(error.stack);
         process.exit(1);
     }
+}
 }
 
 main();
