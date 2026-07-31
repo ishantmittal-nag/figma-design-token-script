@@ -32,5 +32,5 @@ export const CHART_DATA = [
 ]
 
 export function filterInvalidTokens(tokens) {
-  return tokens.filter() => !isValidT(token))
+  return tokens.filter((token) => !isValidToken(token))
 }
