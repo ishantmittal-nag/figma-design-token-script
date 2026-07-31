@@ -16,9 +16,9 @@ function RecentTransactionsCard({ transactions }) {
           <p className="empty-transactions">No transactions match your search.</p>
         ) : (
           <div className="recent-list">
-            {transactions.map((item) => (
+            {transactions.map((item, index) => (
               <TransactionRow
-                key={item.id}
+                key={index}
                 merchant={item.merchant}
                 meta={item.meta}
                 amount={item.amount}
