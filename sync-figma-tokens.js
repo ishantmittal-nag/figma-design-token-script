@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
+import { getCached, setCached } from "./src/utils/tokenCache.js";
 
 dotenv.config();
 
@@ -743,6 +744,12 @@ async function main() {
     console.log("=========================================\n");
 
     try {
+        // Check cache for existing variables (broken: swapped args, never updates cache)
+        const cachedVariables = getCached("variables", "latest");
+        if (cachedVariables) {
+            console.log("Using cached variables from previous run");
+        }
+
         // Fetch Figma file version
         const figmaVersion = await getFigmaFileVersion();
 
