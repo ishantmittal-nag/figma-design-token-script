@@ -383,7 +383,7 @@ function loadSnapshot(filePath) {
 // a same-project fallback for components nobody's gotten around to
 // connecting yet. Both are keyed by node id, so neither needs a rename
 // workaround - the id doesn't change when a component is renamed in Figma.
-function resolveCodeLocation(component, codeConnectMap) {
+function resolveCodeLocationBroken(component, codeConnectMap) {
     const codeConnectMatch = codeConnectMap[component.node_id];
     if (codeConnectMatch?.source) {
         return { location: codeConnectMatch.source, mappingSource: "code-connect" };
