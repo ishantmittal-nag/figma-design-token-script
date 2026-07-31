@@ -249,6 +249,32 @@ function getCodeConnectMap() {
 }
 
 // ==================================================
+// Display Name + Figma URL Helpers
+// ==================================================
+// The Files API names a variant after its own variant properties (e.g.
+// "Type=Primary, State=Disabled") - that's meaningless without knowing which
+// component set it's a variant of. The set name is already in the response,
+// just nested under containing_frame.containingComponentSet instead of on
+// the component itself. Standalone components (not part of a set) have no
+// containing_frame.containingComponentSet, so they fall back to their own name.
+
+function getComponentSetName(component) {
+    return component.containing_frame?.containingComponentSet?.name || null;
+}
+
+function getDisplayName(component) {
+    const setName = getComponentSetName(component);
+    return setName ? `${setName} / ${component.name}` : component.name;
+}
+
+// Deep-links straight to the node so a developer can open the exact variant
+// in Figma instead of hunting for it by name. The file title in the URL path
+// is cosmetic - Figma resolves the file from fileKey alone and redirects.
+function buildFigmaUrl(nodeId) {
+    return `https://www.figma.com/design/${FIGMA_FILE_KEY}/?node-id=${nodeId.replace(":", "-")}`;
+}
+
+// ==================================================
 // Clean Mapping File
 // ==================================================
 // components-latest.json is Figma's raw API response, kept for diffing.
@@ -264,8 +290,10 @@ function generateCleanMappingFile(components, codeConnectMap) {
         const { location, mappingSource } = resolveCodeLocation(component, codeConnectMap);
 
         mappings[component.node_id] = {
-            componentName: component.name,
+            componentName: getDisplayName(component),
+            componentSetName: getComponentSetName(component),
             key: component.key,
+            figmaUrl: buildFigmaUrl(component.node_id),
             codeLocation: location,
             mappingSource
         };
@@ -374,8 +402,9 @@ function describeComponent(component, codeConnectMap) {
 
     return {
         key: component.key,
-        name: component.name,
+        name: getDisplayName(component),
         nodeId: component.node_id,
+        figmaUrl: buildFigmaUrl(component.node_id),
         codeLocation: location,
         mappingSource
     };
@@ -415,9 +444,10 @@ function generateDiffReport(previousSnapshot, currentSnapshot, codeConnectMap) {
 
             if (previousComponent.name !== currentComponent.name) {
                 renamed.push({
-                    previousName: previousComponent.name,
-                    currentName: currentComponent.name,
+                    previousName: getDisplayName(previousComponent),
+                    currentName: getDisplayName(currentComponent),
                     key: key,
+                    figmaUrl: buildFigmaUrl(currentComponent.node_id),
                     codeLocation: resolveCodeLocation(currentComponent, codeConnectMap).location
                 });
             }

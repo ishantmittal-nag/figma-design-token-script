@@ -1,106 +1,148 @@
 {
   "fileKey": "0fNPEupARJhWxly5BBWOno",
-  "generatedAt": "2026-07-31T04:22:50.619Z",
+  "generatedAt": "2026-07-31T06:09:30.723Z",
   "mappings": {
-    "5:160": {
-      "componentName": "State=Hover",
-      "key": "691a7b199c4a7cbe734e014b082c115f5a1930e3",
-      "codeLocation": null,
-      "mappingSource": "unmapped"
-    },
-    "5:161": {
-      "componentName": "State=Disabled",
-      "key": "1efd39c90be272f5d160c1d466e72dea86488117",
-      "codeLocation": null,
-      "mappingSource": "unmapped"
-    },
-    "5:159": {
-      "componentName": "State=Default",
-      "key": "2a4e40810e7c910f6303afc28d1938cbde0f9679",
-      "codeLocation": null,
-      "mappingSource": "unmapped"
-    },
-    "5:36": {
-      "componentName": "Type=Image",
-      "key": "21b7775218502c70820ff74857b5c8c031f86346",
-      "codeLocation": null,
-      "mappingSource": "unmapped"
-    },
-    "5:37": {
-      "componentName": "Type=Stat",
-      "key": "f6291d9b44bdeec9aa56eac6cb90c52ce9d4cf77",
-      "codeLocation": null,
-      "mappingSource": "unmapped"
-    },
-    "5:35": {
-      "componentName": "Type=Basic",
-      "key": "10f82911ceca7994e3481b579ed496fe802e8bbd",
-      "codeLocation": null,
-      "mappingSource": "unmapped"
-    },
     "2:64": {
-      "componentName": "Type=Primary, State=Disabled",
+      "componentName": "Button / Type=Primary, State=Disabled",
+      "componentSetName": "Button",
       "key": "65563006a1b04e7b54689928502338808724fd06",
+      "figmaUrl": "https://www.figma.com/design/0fNPEupARJhWxly5BBWOno/?node-id=2-64",
       "codeLocation": null,
       "mappingSource": "unmapped"
     },
     "2:66": {
-      "componentName": "Type=Secondary, State=Default",
+      "componentName": "Button / Type=Secondary, State=Default",
+      "componentSetName": "Button",
       "key": "68c9c3fbfd8afbfb6823313d9323861be232b46b",
+      "figmaUrl": "https://www.figma.com/design/0fNPEupARJhWxly5BBWOno/?node-id=2-66",
       "codeLocation": null,
       "mappingSource": "unmapped"
     },
-    "4:2": {
-      "componentName": "State=Default",
-      "key": "8ee3702820a020e9facb3c97d441ab0b02229fff",
-      "codeLocation": null,
-      "mappingSource": "unmapped"
-    },
-    "4:6": {
-      "componentName": "State=Filled",
-      "key": "40d908e7a6dee26ac82615616ed2c45d9d0aedff",
-      "codeLocation": null,
-      "mappingSource": "unmapped"
-    },
-    "4:10": {
-      "componentName": "State=Active",
-      "key": "d19bb74956b6c5fbdce143571f408429b4364c0b",
-      "codeLocation": null,
-      "mappingSource": "unmapped"
-    },
-    "2:68": {
-      "componentName": "Type=Secondary, State=Hover",
-      "key": "894f81951e65d08f62ddba4f2225da7d75cccfa6",
-      "codeLocation": null,
-      "mappingSource": "unmapped"
-    },
-    "4:14": {
-      "componentName": "State=Disabled",
-      "key": "ff6d77546fddd28f6fedf1b1bb68e8e3ce46ef60",
-      "codeLocation": null,
-      "mappingSource": "unmapped"
-    },
-    "4:18": {
-      "componentName": "State=Error",
-      "key": "f4cb0f146bab219185c352e23d2291ce1c1fc42f",
-      "codeLocation": null,
-      "mappingSource": "unmapped"
-    },
-    "2:60": {
-      "componentName": "Type=Primary, State=Default",
-      "key": "59468a5869cb35cc7fc739b9988bc72c1bba9cab",
-      "codeLocation": null,
-      "mappingSource": "unmapped"
-    },
-    "2:62": {
-      "componentName": "Type=Primary, State=Hover",
-      "key": "b0dfb57dd03b7106d5b1afadd4dd252bf6d92a55",
+    "54:3": {
+      "componentName": "demo-component",
+      "componentSetName": null,
+      "key": "faa76aface6a4dd24d3ff004cd9dd8a7e7f81c11",
+      "figmaUrl": "https://www.figma.com/design/0fNPEupARJhWxly5BBWOno/?node-id=54-3",
       "codeLocation": null,
       "mappingSource": "unmapped"
     },
     "2:70": {
-      "componentName": "Type=Secondary, State=Disabled",
+      "componentName": "Button / Type=Secondary, State=Disabled",
+      "componentSetName": "Button",
       "key": "0bace4d308f86c97c123d28b66e7f1818d444582",
+      "figmaUrl": "https://www.figma.com/design/0fNPEupARJhWxly5BBWOno/?node-id=2-70",
+      "codeLocation": null,
+      "mappingSource": "unmapped"
+    },
+    "5:161": {
+      "componentName": "Product Card / State=Disabled",
+      "componentSetName": "Product Card",
+      "key": "1efd39c90be272f5d160c1d466e72dea86488117",
+      "figmaUrl": "https://www.figma.com/design/0fNPEupARJhWxly5BBWOno/?node-id=5-161",
+      "codeLocation": null,
+      "mappingSource": "unmapped"
+    },
+    "5:36": {
+      "componentName": "Card / Type=Image",
+      "componentSetName": "Card",
+      "key": "21b7775218502c70820ff74857b5c8c031f86346",
+      "figmaUrl": "https://www.figma.com/design/0fNPEupARJhWxly5BBWOno/?node-id=5-36",
+      "codeLocation": null,
+      "mappingSource": "unmapped"
+    },
+    "5:35": {
+      "componentName": "Card / Type=Basic",
+      "componentSetName": "Card",
+      "key": "10f82911ceca7994e3481b579ed496fe802e8bbd",
+      "figmaUrl": "https://www.figma.com/design/0fNPEupARJhWxly5BBWOno/?node-id=5-35",
+      "codeLocation": null,
+      "mappingSource": "unmapped"
+    },
+    "4:10": {
+      "componentName": "Input Field / State=Active",
+      "componentSetName": "Input Field",
+      "key": "d19bb74956b6c5fbdce143571f408429b4364c0b",
+      "figmaUrl": "https://www.figma.com/design/0fNPEupARJhWxly5BBWOno/?node-id=4-10",
+      "codeLocation": null,
+      "mappingSource": "unmapped"
+    },
+    "4:18": {
+      "componentName": "Input Field / State=Error",
+      "componentSetName": "Input Field",
+      "key": "f4cb0f146bab219185c352e23d2291ce1c1fc42f",
+      "figmaUrl": "https://www.figma.com/design/0fNPEupARJhWxly5BBWOno/?node-id=4-18",
+      "codeLocation": null,
+      "mappingSource": "unmapped"
+    },
+    "5:37": {
+      "componentName": "Card / Type=Stat",
+      "componentSetName": "Card",
+      "key": "f6291d9b44bdeec9aa56eac6cb90c52ce9d4cf77",
+      "figmaUrl": "https://www.figma.com/design/0fNPEupARJhWxly5BBWOno/?node-id=5-37",
+      "codeLocation": null,
+      "mappingSource": "unmapped"
+    },
+    "5:159": {
+      "componentName": "Product Card / State=Default",
+      "componentSetName": "Product Card",
+      "key": "2a4e40810e7c910f6303afc28d1938cbde0f9679",
+      "figmaUrl": "https://www.figma.com/design/0fNPEupARJhWxly5BBWOno/?node-id=5-159",
+      "codeLocation": null,
+      "mappingSource": "unmapped"
+    },
+    "4:6": {
+      "componentName": "Input Field / State=Filled",
+      "componentSetName": "Input Field",
+      "key": "40d908e7a6dee26ac82615616ed2c45d9d0aedff",
+      "figmaUrl": "https://www.figma.com/design/0fNPEupARJhWxly5BBWOno/?node-id=4-6",
+      "codeLocation": null,
+      "mappingSource": "unmapped"
+    },
+    "2:60": {
+      "componentName": "Button / Type=Primary, State=Default",
+      "componentSetName": "Button",
+      "key": "59468a5869cb35cc7fc739b9988bc72c1bba9cab",
+      "figmaUrl": "https://www.figma.com/design/0fNPEupARJhWxly5BBWOno/?node-id=2-60",
+      "codeLocation": null,
+      "mappingSource": "unmapped"
+    },
+    "5:160": {
+      "componentName": "Product Card / State=Hover",
+      "componentSetName": "Product Card",
+      "key": "691a7b199c4a7cbe734e014b082c115f5a1930e3",
+      "figmaUrl": "https://www.figma.com/design/0fNPEupARJhWxly5BBWOno/?node-id=5-160",
+      "codeLocation": null,
+      "mappingSource": "unmapped"
+    },
+    "2:68": {
+      "componentName": "Button / Type=Secondary, State=Hover",
+      "componentSetName": "Button",
+      "key": "894f81951e65d08f62ddba4f2225da7d75cccfa6",
+      "figmaUrl": "https://www.figma.com/design/0fNPEupARJhWxly5BBWOno/?node-id=2-68",
+      "codeLocation": null,
+      "mappingSource": "unmapped"
+    },
+    "4:2": {
+      "componentName": "Input Field / State=Default",
+      "componentSetName": "Input Field",
+      "key": "8ee3702820a020e9facb3c97d441ab0b02229fff",
+      "figmaUrl": "https://www.figma.com/design/0fNPEupARJhWxly5BBWOno/?node-id=4-2",
+      "codeLocation": null,
+      "mappingSource": "unmapped"
+    },
+    "2:62": {
+      "componentName": "Button / Type=Primary, State=Hover",
+      "componentSetName": "Button",
+      "key": "b0dfb57dd03b7106d5b1afadd4dd252bf6d92a55",
+      "figmaUrl": "https://www.figma.com/design/0fNPEupARJhWxly5BBWOno/?node-id=2-62",
+      "codeLocation": null,
+      "mappingSource": "unmapped"
+    },
+    "4:14": {
+      "componentName": "Input Field / State=Disabled",
+      "componentSetName": "Input Field",
+      "key": "ff6d77546fddd28f6fedf1b1bb68e8e3ce46ef60",
+      "figmaUrl": "https://www.figma.com/design/0fNPEupARJhWxly5BBWOno/?node-id=4-14",
       "codeLocation": null,
       "mappingSource": "unmapped"
     }
