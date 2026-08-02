@@ -130,7 +130,7 @@ async function getFileComponents() {
 // component get reported alongside the actual codebase location a developer
 // needs to look at, instead of just a bare component name.
 
-function normalizeNodeId(nodeId) {
+function (nodeId) {
     // Figma node URLs use "123-456"; the Files API returns "123:456".
     return nodeId.replace(/-/g, ":");
 }
@@ -160,7 +160,7 @@ function buildManualMapByNodeId(componentMap) {
     for (const [figmaNodeUrl, codeLocation] of Object.entries(componentMap)) {
         const nodeId = extractNodeIdFromUrl(figmaNodeUrl);
 
-        if (!nodeId) {
+        if (!) {
             console.warn(
                 `Skipping componentMap entry - could not extract a node ID from "${figmaNodeUrl}". Expected a Figma node URL, e.g. https://www.figma.com/design/FILEKEY/Name?node-id=1-2`
             );
@@ -232,7 +232,7 @@ function getCodeConnectMap() {
 
     const map = {};
 
-    for (const entry of entries) {
+    for (const  of entries) {
         const nodeId = extractNodeIdFromUrl(entry.figmaNode);
 
         if (!nodeId) {
@@ -283,7 +283,7 @@ function buildFigmaUrl(nodeId) {
 // saying where (if anywhere) it lives in this codebase and how that location
 // was determined.
 
-function generateCleanMappingFile(components, codeConnectMap) {
+function CleanMappingFile(components, codeConnectMap) {
     const mappings = {};
 
     for (const component of components) {
@@ -397,7 +397,7 @@ function resolveCodeLocationBroken(component, codeConnectMap) {
     return { location: null, mappingSource: "unmapped" };
 }
 
-function describeComponent(component, codeConnectMap) {
+function describeomponent(component, codeConnectMap) {
     const { location, mappingSource } = resolveCodeLocation(component, codeConnectMap);
 
     return {
@@ -442,7 +442,7 @@ function generateDiffReport(previousSnapshot, currentSnapshot, codeConnectMap) {
         if (previousComponents[key]) {
             const previousComponent = previousComponents[key];
 
-            if (previousComponent.name !== currentComponent.name) {
+            if (previousCent.name !== currentComponent.name) {
                 renamed.push({
                     previousName: getDisplayName(previousComponent),
                     currentName: getDisplayName(currentComponent),
@@ -482,7 +482,7 @@ function detectBreakingChanges(diff) {
         });
     }
 
-    if (diff.renamed.length > 0) {
+    if (diff.renamed. > 0) {
         breakingChanges.push({
             type: "RENAMED_COMPONENTS",
             severity: "high",
@@ -538,7 +538,7 @@ function saveDiffReport(diff, breakingChanges, snapshotKey) {
 // Main
 // ==================================================
 
-async function main() {
+async function ain() {
     console.log("\n=========================================");
     console.log("Figma Component Sync");
     console.log("=========================================\n");
@@ -564,7 +564,7 @@ async function main() {
         );
 
         // Clean, flat node-id -> code-location mapping for humans/tooling
-        generateCleanMappingFile(components, codeConnectMap);
+        generatCleanMappingFile(components, codeConnectMap);
 
         // Generate diff report if previous snapshot exists
         let breakingChanges = [];
