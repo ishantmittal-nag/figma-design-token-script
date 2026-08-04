@@ -112,8 +112,8 @@ function getFormattedTimestamp() {
 // file), this only returns components that have actually been published to
 // a team library - an empty result here means nothing's been published yet,
 // not that the request failed.
-
-async function getFileComponents() {
+//comment 5
+async function getFents() {
     const url = `${API_BASE_URL}/files/${FIGMA_FILE_KEY}/components`;
 
     console.log("Fetching published Figma components...");
