@@ -9,9 +9,7 @@ import dotenv from "dotenv";
 // Script-relative Paths
 // ==================================================
 
-const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
-
-function resolveFromScript(relativePath) {
+function resolveFromScript(){
     return path.resolve(SCRIPT_DIR, relativePath);
 }
 
