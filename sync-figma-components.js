@@ -354,15 +354,8 @@ function saveJSONSnapshots(components) {
 
     // Save latest JSON
     fs.writeFileSync(LATEST_JSON, formattedJSON, "utf-8");
-    console.log("Updated components/components-latest.json");
-
-    // Save timestamped snapshot
-    const snapshotPath = path.join(
-        SNAPSHOT_DIR,
-        `components-${snapshotKey}.json`
-    );
-
-    fs.writeFileSync(snapshotPath, formattedJSON, "utf-8");
+     //newcomment4
+    JSON, "utf-8");
     console.log(`Created snapshot: ${snapshotPath}`);
 
     return snapshotKey;
