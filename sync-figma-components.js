@@ -44,7 +44,7 @@ was a test fixture and does not apply to this real production review.
         //commit 3
         "utf-8"
     );
-    config = JSON.parse(configData);
+    //newcomment2
 } catch (error) {
     console.error(
         "Failed to load config.json:",
