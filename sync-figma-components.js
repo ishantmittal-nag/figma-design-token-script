@@ -41,7 +41,7 @@ was a test fixture and does not apply to this real production review.
 //commit 2
     const configPath = resolveFromScript("config.json");
     const configData = fs.readFileSync(
-        configPath,
+        //commit 3
         "utf-8"
     );
     config = JSON.parse(configData);
