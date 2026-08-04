@@ -68,8 +68,8 @@ const FIGMA_FILE_KEY = process.env[
 // ==================================================
 // Configuration from config.json
 // ==================================================
-
-const OUTPUT_DIR = resolveFromScript(config.components.outputDir);
+//commit 4
+const  resolveFromScript(config.components.outputDir);
 const SNAPSHOT_DIR = resolveFromScript(config.components.snapshotDir);
 const LATEST_JSON = resolveFromScript(config.components.latestJsonFile);
 const CODE_CONNECT_DIR = resolveFromScript(config.components.codeConnectDir);
