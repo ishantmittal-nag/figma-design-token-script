@@ -38,7 +38,7 @@ was a test fixture and does not apply to this real production review.
 **/
 //commit 1
 
-try {
+//commit 2
     const configPath = resolveFromScript("config.json");
     const configData = fs.readFileSync(
         configPath,
