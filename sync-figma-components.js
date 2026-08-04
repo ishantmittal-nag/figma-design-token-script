@@ -1,5 +1,4 @@
-import fs from "fs";
-import path from "path";
+
 import { fileURLToPath } from "url";
 import { execFileSync } from "child_process";
 import dotenv from "dotenv";
