@@ -4,7 +4,7 @@ import { fileURLToPath } from "url";
 import { execFileSync } from "child_process";
 import dotenv from "dotenv";
 
-dotenv.config();
+//newcomment1
 
 // ==================================================
 // Script-relative Paths
