@@ -3,80 +3,39 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { execFileSync } from "child_process";
 import dotenv from "dotenv";
+import { loadConfig, resolveFromScript } from "./config.js";
 
 dotenv.config();
 
 // ==================================================
-// Script-relative Paths
+// Configuration
 // ==================================================
+// See config.js - reads config.json plus the required env vars and resolves
+// every path relative to this script's directory. Loaded eagerly here (not
+// inside main()) so every function below can keep referencing these as
+// plain module-level constants, same as before the config load moved out.
 
-const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
-
-function resolveFromScript(relativePath) {
-    return path.resolve(SCRIPT_DIR, relativePath);
-}
-
-// ==================================================
-// Load Configuration
-// ==================================================
-
-let config;
+let CFG;
 
 try {
-    const configPath = resolveFromScript("config.json");
-    const configData = fs.readFileSync(
-        configPath,
-        "utf-8"
-    );
-    config = JSON.parse(configData);
+    CFG = loadConfig();
 } catch (error) {
-    console.error(
-        "Failed to load config.json:",
-        error.message
-    );
+    console.error("Failed to load configuration:", error.message);
     process.exit(1);
 }
 
-// ==================================================
-// Environment Variables
-// ==================================================
-
-const FIGMA_TOKEN = process.env[
-    config.environment.figmaTokenVar
-]?.trim();
-
-const FIGMA_FILE_KEY = process.env[
-    config.environment.figmaFileKeyVar
-]?.trim();
-
-// ==================================================
-// Configuration from config.json
-// ==================================================
-
-const OUTPUT_DIR = resolveFromScript(config.components.outputDir);
-const SNAPSHOT_DIR = resolveFromScript(config.components.snapshotDir);
-const LATEST_JSON = resolveFromScript(config.components.latestJsonFile);
-const CODE_CONNECT_DIR = resolveFromScript(config.components.codeConnectDir);
-const MAPPING_JSON = path.join(OUTPUT_DIR, "code-connect-map.json");
-
-// Keyed by full Figma node URL (e.g. "https://www.figma.com/design/FILEKEY/Name?node-id=1-2"),
-// copied straight from Figma's "Copy link to selection" - not by component name, so an entry
-// survives a rename the same way a Code Connect file does. Resolved to a node-id-keyed lookup
-// below, once extractNodeIdFromUrl is available.
-const COMPONENT_MAP = config.components.componentMap || {};
-
-const API_BASE_URL = config.figma.apiBaseUrl;
-
-// ==================================================
-// Validate Environment
-// ==================================================
-
-if (!FIGMA_TOKEN || !FIGMA_FILE_KEY) {
-    console.error(
-        `Missing ${config.environment.figmaTokenVar} or ${config.environment.figmaFileKeyVar} in environment`
-    );
-    process.exit(1);
-}
+const {
+    SCRIPT_DIR,
+    FIGMA_TOKEN,
+    FIGMA_FILE_KEY,
+    OUTPUT_DIR,
+    SNAPSHOT_DIR,
+    LATEST_JSON,
+    CODE_CONNECT_DIR,
+    MAPPING_JSON,
+    COMPONENT_MAP,
+    API_BASE_URL
+} = CFG;
 
 // ==================================================
 // Utility Functions
@@ -130,12 +89,12 @@ async function getFileComponents() {
 // component get reported alongside the actual codebase location a developer
 // needs to look at, instead of just a bare component name.
 
-function normalizeNodeId(nodeId) {
+export function normalizeNodeId(nodeId) {
     // Figma node URLs use "123-456"; the Files API returns "123:456".
     return nodeId.replace(/-/g, ":");
 }
 
-function extractNodeIdFromUrl(figmaNodeUrl) {
+export function extractNodeIdFromUrl(figmaNodeUrl) {
     try {
         const url = new URL(figmaNodeUrl);
         const nodeId = url.searchParams.get("node-id");
@@ -262,7 +221,7 @@ function getComponentSetName(component) {
     return component.containing_frame?.containingComponentSet?.name || null;
 }
 
-function getDisplayName(component) {
+export function getDisplayName(component) {
     const setName = getComponentSetName(component);
     return setName ? `${setName} / ${component.name}` : component.name;
 }
@@ -383,13 +342,28 @@ function loadSnapshot(filePath) {
 // a same-project fallback for components nobody's gotten around to
 // connecting yet. Both are keyed by node id, so neither needs a rename
 // workaround - the id doesn't change when a component is renamed in Figma.
-function resolveCodeLocation(component, codeConnectMap) {
-    const codeConnectMatch = codeConnectMap[component.node_id];
+//
+// A `figma.connect(...)` call (and a manual componentMap entry, following
+// the same shape) is written against a component SET's node id (e.g.
+// node-id=4-23 for "Input Field"), covering every variant through props like
+// figma.enum(), not one call per variant. But the Components API publishes
+// each variant under its own node id (4:2, 4:6, ...), so a variant's direct
+// node_id essentially never appears in either map - both need to be checked
+// against the variant's containingComponentSet id instead. Standalone
+// components (no component set) fall through to the direct match, which is
+// still correct since their published node id *is* the connect/mapping URL's
+// node id.
+export function resolveCodeLocation(component, codeConnectMap) {
+    const setNodeId = component.containing_frame?.containingComponentSet?.nodeId;
+
+    const codeConnectMatch = codeConnectMap[component.node_id] ||
+        (setNodeId && codeConnectMap[setNodeId]);
     if (codeConnectMatch?.source) {
         return { location: codeConnectMatch.source, mappingSource: "code-connect" };
     }
 
-    const manualMatch = MANUAL_MAP_BY_NODE_ID[component.node_id];
+    const manualMatch = MANUAL_MAP_BY_NODE_ID[component.node_id] ||
+        (setNodeId && MANUAL_MAP_BY_NODE_ID[setNodeId]);
     if (manualMatch) {
         return { location: manualMatch, mappingSource: "manual" };
     }
@@ -410,7 +384,7 @@ function describeComponent(component, codeConnectMap) {
     };
 }
 
-function generateDiffReport(previousSnapshot, currentSnapshot, codeConnectMap) {
+export function generateDiffReport(previousSnapshot, currentSnapshot, codeConnectMap) {
     const previousComponents = previousSnapshot.components || {};
     const currentComponents = currentSnapshot.components || {};
 
@@ -442,7 +416,11 @@ function generateDiffReport(previousSnapshot, currentSnapshot, codeConnectMap) {
         if (previousComponents[key]) {
             const previousComponent = previousComponents[key];
 
-            if (previousComponent.name !== currentComponent.name) {
+            // Compare the full display name (component set name + variant name),
+            // not just the variant's own name field - a variant's name is just
+            // "State=Default" etc., so renaming the component SET itself (e.g.
+            // "Input Field" -> "Input") would otherwise go undetected here.
+            if (getDisplayName(previousComponent) !== getDisplayName(currentComponent)) {
                 renamed.push({
                     previousName: getDisplayName(previousComponent),
                     currentName: getDisplayName(currentComponent),
@@ -469,7 +447,7 @@ function generateDiffReport(previousSnapshot, currentSnapshot, codeConnectMap) {
     };
 }
 
-function detectBreakingChanges(diff) {
+export function detectBreakingChanges(diff) {
     const breakingChanges = [];
 
     if (diff.removed.length > 0) {
@@ -606,5 +584,10 @@ async function main() {
 // ==================================================
 // Execute
 // ==================================================
+// Only run automatically when this file is the process entry point (`node
+// sync-figma-components.js`) - not when it's imported, e.g. by a test file
+// that just wants the exported pure functions above.
 
-main();
+if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url))) {
+    main();
+}

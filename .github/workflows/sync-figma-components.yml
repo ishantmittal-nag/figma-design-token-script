@@ -15,6 +15,12 @@ on:
         description: "Branch to read src/ from for Code Connect cross-referencing"
         required: false
         default: "main"
+      figma_file_key:
+        description: "Figma file key to sync (overrides the FIGMA_FILE_KEY repo variable for this run)"
+        required: false
+      figma_api_base_url:
+        description: "Figma API base URL (overrides the FIGMA_API_BASE_URL repo variable for this run; leave blank for the default Figma API)"
+        required: false
   push:
     branches:
       - figma-components-sync
@@ -46,7 +52,7 @@ jobs:
       - name: Checkout app source for Code Connect cross-reference
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.app_branch || 'main' }}
+          ref: ${{ inputs.app_branch || vars.APP_BRANCH || 'main' }}
           sparse-checkout: |
             src
           sparse-checkout-cone-mode: false
@@ -58,7 +64,7 @@ jobs:
           if [ -d _app-src/src ]; then
             cp -r _app-src/src src
           else
-            echo "No src/ found on ${{ inputs.app_branch || 'main' }} - continuing without local Code Connect files."
+            echo "No src/ found on ${{ inputs.app_branch || vars.APP_BRANCH || 'main' }} - continuing without local Code Connect files."
           fi
           rm -rf _app-src
 
@@ -74,8 +80,18 @@ jobs:
       - name: Sync Figma components
         id: sync
         env:
+          # FIGMA_TOKEN is the only actual credential here, so it stays a
+          # secret. FIGMA_FILE_KEY and the API base URL are just config, not
+          # secrets - they come from repo Variables (Settings > Secrets and
+          # variables > Actions > Variables) so they can be changed from the
+          # GitHub UI without touching code, with a per-run override via the
+          # workflow_dispatch inputs above. secrets.FIGMA_FILE_KEY is a
+          # transitional fallback for repos that haven't added the
+          # FIGMA_FILE_KEY repo Variable yet - once it's set, add the
+          # Variable and this fallback (plus the old secret) can be removed.
           FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
-          FIGMA_FILE_KEY: ${{ secrets.FIGMA_FILE_KEY }}
+          FIGMA_FILE_KEY: ${{ inputs.figma_file_key || vars.FIGMA_FILE_KEY || secrets.FIGMA_FILE_KEY }}
+          FIGMA_API_BASE_URL: ${{ inputs.figma_api_base_url || vars.FIGMA_API_BASE_URL }}
           DOTENV_CONFIG_QUIET: "true"
         run: |
           set +e
