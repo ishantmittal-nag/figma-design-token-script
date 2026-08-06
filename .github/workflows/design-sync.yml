@@ -34,7 +34,12 @@ jobs:
         id: sync
         env:
           FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
-          FIGMA_FILE_KEY: ${{ secrets.FIGMA_FILE_KEY }}
+          # Prefer the FIGMA_FILE_KEY repo Variable (Settings > Secrets and
+          # variables > Actions > Variables) - not sensitive, just an
+          # identifier, so it's editable from the GitHub UI without a code
+          # change. secrets.FIGMA_FILE_KEY is kept as a fallback for repos
+          # that haven't added the Variable yet.
+          FIGMA_FILE_KEY: ${{ vars.FIGMA_FILE_KEY || secrets.FIGMA_FILE_KEY }}
         run: |
           node sync-figma-tokens.js
           EXIT_CODE=$?
@@ -45,7 +50,12 @@ jobs:
         id: sync-components
         env:
           FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
-          FIGMA_FILE_KEY: ${{ secrets.FIGMA_FILE_KEY }}
+          # Prefer the FIGMA_FILE_KEY repo Variable (Settings > Secrets and
+          # variables > Actions > Variables) - not sensitive, just an
+          # identifier, so it's editable from the GitHub UI without a code
+          # change. secrets.FIGMA_FILE_KEY is kept as a fallback for repos
+          # that haven't added the Variable yet.
+          FIGMA_FILE_KEY: ${{ vars.FIGMA_FILE_KEY || secrets.FIGMA_FILE_KEY }}
         run: |
           node sync-figma-components.js
           EXIT_CODE=$?

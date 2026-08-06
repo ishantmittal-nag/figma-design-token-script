@@ -25,6 +25,17 @@ Both scripts:
 Neither script needs a second execution to "work" - the first run just has
 nothing to diff against yet (`📝 First run - no previous snapshot to compare`).
 
+Both scripts share `config.js` for loading `config.json` and validating
+`FIGMA_TOKEN`/`FIGMA_FILE_KEY` - `sync-figma-tokens.js` calls
+`loadTokensConfig()`, `sync-figma-components.js` calls
+`loadComponentsConfig()`. Each only reads the `config.json` blocks it
+actually needs (tokens gets `paths`/`css`; components gets `components`),
+kept separate so neither script's config shape leaks into the other's. See
+[`docs/tokens-sync.md`](docs/tokens-sync.md) and
+[`docs/components-sync.md`](docs/components-sync.md) for a per-pipeline
+deep dive (architecture, category/mapping rules, troubleshooting specific
+to each) - this doc stays the shared overview.
+
 ## 1. Prerequisites
 
 - Node 18+ (the CI workflow pins `node-version: 18`; anything newer works
@@ -126,28 +137,57 @@ To get a component's changes linked to a source file in the PR body, either:
   Mode panel, which is a nice bonus but not required for the PR flagging to
   work.
 
-## 6. Automated sync (`.github/workflows/design-sync.yml`)
+## 6. Automated sync - three workflows
 
-Runs daily at midnight UTC (and on-demand via **Actions → Design Tokens
-Sync → Run workflow**). Requires two **repository secrets** (Settings →
-Secrets and variables → Actions): `FIGMA_TOKEN` and `FIGMA_FILE_KEY`, same
-values as your local `.env`.
+There are three GitHub Actions workflows, all PR-based (none push straight
+to `main` - a bad or unexpected sync always gets a review step first):
 
-It runs both scripts, then opens a PR **only if either diff report shows a
-real change** (added/removed/modified/renamed > 0) - not on every run, since
-the diff reports' own timestamps would otherwise make the working tree look
-"different" every single day even with zero actual token/component changes.
-The PR:
+| Workflow | Trigger | Runs | Opens a PR touching |
+|---|---|---|---|
+| [`design-sync.yml`](.github/workflows/design-sync.yml) | Nightly (`0 0 * * *`) + manual | Both scripts | `tokens/` and `components/` together |
+| [`sync-figma-tokens.yml`](.github/workflows/sync-figma-tokens.yml) | Manual only | `sync-figma-tokens.js` | `tokens/` only |
+| [`sync-figma-components.yml`](.github/workflows/sync-figma-components.yml) | Manual only | `sync-figma-components.js` | `components/` only |
+
+The two dedicated ones exist for running just one pipeline on demand
+without also triggering the other - `design-sync.yml` stays the sole
+scheduled automation, so three different sources aren't all opening
+overlapping nightly PRs. All three read the same `FIGMA_TOKEN`/
+`FIGMA_FILE_KEY` credentials and, being on `main`, all show a **"Run
+workflow"** button directly in the Actions tab (GitHub only shows that
+button for workflow files present on the default branch).
+
+Each opens a PR **only if its diff report shows a real change**
+(added/removed/modified/renamed > 0) - not on every run, since the diff
+reports' own timestamps would otherwise make the working tree look
+"different" every single run even with zero actual token/component changes.
+Every PR:
 - Is titled with ⚠️ if any breaking change was found, ✅ otherwise.
-- Lists every changed component with its resolved code location (or a
-  note that no mapping was found).
-- Links to both `tokens/diff-latest.json` and `components/diff-latest.json`
-  for the full detail.
+- Links to the relevant `diff-latest.json` file(s) for the full detail.
+- (Components PRs specifically) lists every changed component with its
+  resolved code location, or a note that no mapping was found.
 
 `tokens/snapshots/` and `components/snapshots/` accumulate one file per
 sync that produced a real change - nothing prunes them automatically by
 design, so prune old ones by hand occasionally if repo size becomes a
 concern.
+
+### Credentials: secret vs. Variable
+
+- **`FIGMA_TOKEN`** stays a **repository secret** (Settings → Secrets and
+  variables → Actions → Secrets) - it's the one real credential here.
+- **`FIGMA_FILE_KEY`** is not sensitive, just an identifier, so it belongs
+  in **repository Variables** (same page, Variables tab) instead - editable
+  from the GitHub UI with no code change. All three workflows read
+  `vars.FIGMA_FILE_KEY` first, falling back to `secrets.FIGMA_FILE_KEY` for
+  compatibility with the old secret-only setup (safe to delete that secret
+  once the Variable is confirmed working).
+- **`FIGMA_API_BASE_URL`** is an optional repo Variable for pointing at a
+  non-standard Figma API host (e.g. an enterprise instance); defaults to
+  `https://api.figma.com/v1` from `config.json` if unset.
+- The two dedicated workflows also accept `figma_file_key` /
+  `figma_api_base_url` as `workflow_dispatch` inputs, which override the
+  repo Variables for that one run only - useful for testing against a
+  different file without changing the persistent default.
 
 ## Troubleshooting
 
