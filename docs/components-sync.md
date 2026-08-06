@@ -55,8 +55,11 @@ this order:
 
 1. **Code Connect** (`*.figma.tsx` files under `components.codeConnectDir`,
    default `./src` - parsed via the `@figma/code-connect` CLI) -
-   authoritative when present. Since this runs directly on `main`, the real
-   `src/` is already checked out; no cross-branch fetch needed.
+   authoritative when present. This repo has no application source of its
+   own, so `./src` won't exist unless `codeConnectDir` is pointed at a
+   local checkout of the app repo (or a subset of it, staged before the
+   sync runs) - without that, this step finds nothing and every component
+   falls through to `componentMap` or `unmapped`.
 2. **Manual `componentMap`** in `config.json` - a fallback for components
    nobody's connected yet. Keyed by the full Figma node URL (Figma's "Copy
    link to selection"), not by name.
@@ -84,10 +87,12 @@ call targets the set's node URL, not one variant's.
 
 ## Troubleshooting (components-specific)
 
-- **Everything reports `mappingSource: "unmapped"`** - Code Connect found no
-  `*.figma.tsx` files, or none of them matched via node id. Check that
-  `src/` actually has `*.figma.tsx` files and that they target the
-  component *set's* node URL (see above).
+- **Everything reports `mappingSource: "unmapped"`** - expected if
+  `codeConnectDir` is left at its default `./src` and `componentMap` is
+  empty, since neither has anything to resolve against in this repo. Either
+  populate `componentMap`, or point `codeConnectDir` at a local checkout
+  that actually has `*.figma.tsx` files targeting the component *set's*
+  node URL (see above).
 - **"Could not run Code Connect parse - continuing without code-location
   mapping"** - non-fatal; the CLI itself failed to run (e.g. a
   `figma.config.json` parser mismatch). The rest of the sync still
