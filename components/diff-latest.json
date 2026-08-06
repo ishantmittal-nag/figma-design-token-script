@@ -1,15 +1,160 @@
 {
-  "timestamp": "2026-08-06T05:29:45.402Z",
-  "snapshotKey": "2026-08-06T05-29-43",
+  "timestamp": "2026-08-06T05:37:55.663Z",
+  "snapshotKey": "2026-08-06T05-37-53",
   "summary": {
-    "added": 0,
+    "added": 18,
     "removed": 0,
     "modified": 0,
     "renamed": 0,
     "breakingChanges": 0
   },
   "changes": {
-    "added": [],
+    "added": [
+      {
+        "key": "59468a5869cb35cc7fc739b9988bc72c1bba9cab",
+        "name": "Button / Type=Primary, State=Default",
+        "nodeId": "2:60",
+        "figmaUrl": "https://www.figma.com/design/0fNPEupARJhWxly5BBWOno/?node-id=2-60",
+        "codeLocation": null,
+        "mappingSource": "unmapped"
+      },
+      {
+        "key": "65563006a1b04e7b54689928502338808724fd06",
+        "name": "Button / Type=Primary, State=Disabled",
+        "nodeId": "2:64",
+        "figmaUrl": "https://www.figma.com/design/0fNPEupARJhWxly5BBWOno/?node-id=2-64",
+        "codeLocation": null,
+        "mappingSource": "unmapped"
+      },
+      {
+        "key": "68c9c3fbfd8afbfb6823313d9323861be232b46b",
+        "name": "Button / Type=Secondary, State=Default",
+        "nodeId": "2:66",
+        "figmaUrl": "https://www.figma.com/design/0fNPEupARJhWxly5BBWOno/?node-id=2-66",
+        "codeLocation": null,
+        "mappingSource": "unmapped"
+      },
+      {
+        "key": "894f81951e65d08f62ddba4f2225da7d75cccfa6",
+        "name": "Button / Type=Secondary, State=Hover",
+        "nodeId": "2:68",
+        "figmaUrl": "https://www.figma.com/design/0fNPEupARJhWxly5BBWOno/?node-id=2-68",
+        "codeLocation": null,
+        "mappingSource": "unmapped"
+      },
+      {
+        "key": "b0dfb57dd03b7106d5b1afadd4dd252bf6d92a55",
+        "name": "Button / Type=Primary, State=Hover",
+        "nodeId": "2:62",
+        "figmaUrl": "https://www.figma.com/design/0fNPEupARJhWxly5BBWOno/?node-id=2-62",
+        "codeLocation": null,
+        "mappingSource": "unmapped"
+      },
+      {
+        "key": "d19bb74956b6c5fbdce143571f408429b4364c0b",
+        "name": "Input  / State=Active",
+        "nodeId": "4:10",
+        "figmaUrl": "https://www.figma.com/design/0fNPEupARJhWxly5BBWOno/?node-id=4-10",
+        "codeLocation": null,
+        "mappingSource": "unmapped"
+      },
+      {
+        "key": "f4cb0f146bab219185c352e23d2291ce1c1fc42f",
+        "name": "Input  / State=Error",
+        "nodeId": "4:18",
+        "figmaUrl": "https://www.figma.com/design/0fNPEupARJhWxly5BBWOno/?node-id=4-18",
+        "codeLocation": null,
+        "mappingSource": "unmapped"
+      },
+      {
+        "key": "0bace4d308f86c97c123d28b66e7f1818d444582",
+        "name": "Button / Type=Secondary, State=Disabled",
+        "nodeId": "2:70",
+        "figmaUrl": "https://www.figma.com/design/0fNPEupARJhWxly5BBWOno/?node-id=2-70",
+        "codeLocation": null,
+        "mappingSource": "unmapped"
+      },
+      {
+        "key": "faa76aface6a4dd24d3ff004cd9dd8a7e7f81c11",
+        "name": "demo-component",
+        "nodeId": "54:3",
+        "figmaUrl": "https://www.figma.com/design/0fNPEupARJhWxly5BBWOno/?node-id=54-3",
+        "codeLocation": null,
+        "mappingSource": "unmapped"
+      },
+      {
+        "key": "1efd39c90be272f5d160c1d466e72dea86488117",
+        "name": "Product Card / State=Disabled",
+        "nodeId": "5:161",
+        "figmaUrl": "https://www.figma.com/design/0fNPEupARJhWxly5BBWOno/?node-id=5-161",
+        "codeLocation": null,
+        "mappingSource": "unmapped"
+      },
+      {
+        "key": "21b7775218502c70820ff74857b5c8c031f86346",
+        "name": "Card / Type=Image",
+        "nodeId": "5:36",
+        "figmaUrl": "https://www.figma.com/design/0fNPEupARJhWxly5BBWOno/?node-id=5-36",
+        "codeLocation": null,
+        "mappingSource": "unmapped"
+      },
+      {
+        "key": "10f82911ceca7994e3481b579ed496fe802e8bbd",
+        "name": "Card / Type=Basic",
+        "nodeId": "5:35",
+        "figmaUrl": "https://www.figma.com/design/0fNPEupARJhWxly5BBWOno/?node-id=5-35",
+        "codeLocation": null,
+        "mappingSource": "unmapped"
+      },
+      {
+        "key": "f6291d9b44bdeec9aa56eac6cb90c52ce9d4cf77",
+        "name": "Card / Type=Stat",
+        "nodeId": "5:37",
+        "figmaUrl": "https://www.figma.com/design/0fNPEupARJhWxly5BBWOno/?node-id=5-37",
+        "codeLocation": null,
+        "mappingSource": "unmapped"
+      },
+      {
+        "key": "2a4e40810e7c910f6303afc28d1938cbde0f9679",
+        "name": "Product Card / State=Default",
+        "nodeId": "5:159",
+        "figmaUrl": "https://www.figma.com/design/0fNPEupARJhWxly5BBWOno/?node-id=5-159",
+        "codeLocation": null,
+        "mappingSource": "unmapped"
+      },
+      {
+        "key": "691a7b199c4a7cbe734e014b082c115f5a1930e3",
+        "name": "Product Card / State=Hover",
+        "nodeId": "5:160",
+        "figmaUrl": "https://www.figma.com/design/0fNPEupARJhWxly5BBWOno/?node-id=5-160",
+        "codeLocation": null,
+        "mappingSource": "unmapped"
+      },
+      {
+        "key": "40d908e7a6dee26ac82615616ed2c45d9d0aedff",
+        "name": "Input  / State=Filled",
+        "nodeId": "4:6",
+        "figmaUrl": "https://www.figma.com/design/0fNPEupARJhWxly5BBWOno/?node-id=4-6",
+        "codeLocation": null,
+        "mappingSource": "unmapped"
+      },
+      {
+        "key": "8ee3702820a020e9facb3c97d441ab0b02229fff",
+        "name": "Input  / State=Default",
+        "nodeId": "4:2",
+        "figmaUrl": "https://www.figma.com/design/0fNPEupARJhWxly5BBWOno/?node-id=4-2",
+        "codeLocation": null,
+        "mappingSource": "unmapped"
+      },
+      {
+        "key": "ff6d77546fddd28f6fedf1b1bb68e8e3ce46ef60",
+        "name": "Input  / State=Disabled",
+        "nodeId": "4:14",
+        "figmaUrl": "https://www.figma.com/design/0fNPEupARJhWxly5BBWOno/?node-id=4-14",
+        "codeLocation": null,
+        "mappingSource": "unmapped"
+      }
+    ],
     "removed": [],
     "modified": [],
     "renamed": []
