@@ -82,6 +82,13 @@ jobs:
             echo "has_changes=false" >> "$GITHUB_OUTPUT"
           fi
 
+      # GitHub Actions expression strings don't process backslash escapes -
+      # a literal \n inside a ${{ ... }} ternary/format() ends up in the PR
+      # body as the two characters \n, not a line break. Building the full
+      # message here (with real newlines) as a step output, via the same
+      # heredoc-delimiter technique used elsewhere in this repo for
+      # multi-line outputs, sidesteps that instead of fighting the
+      # expression syntax.
       - name: Extract breaking changes info
         id: breaking-changes
         if: steps.check-changes.outputs.has_changes == 'true'
@@ -91,11 +98,25 @@ jobs:
             BREAKING=$(jq '.summary.breakingChanges' tokens/diff-latest.json)
           fi
           echo "breaking_count=$BREAKING" >> "$GITHUB_OUTPUT"
+
+          delimiter="ghadelimiter_$(date +%s%N)"
           if [ "$BREAKING" -gt 0 ]; then
             echo "has_breaking=true" >> "$GITHUB_OUTPUT"
+            MESSAGE="### ⚠️ BREAKING CHANGES DETECTED
+
+          **Breaking Changes Found:** ${BREAKING}
+
+          This PR contains breaking changes that may require updates in the codebase. Please review carefully before merging."
           else
             echo "has_breaking=false" >> "$GITHUB_OUTPUT"
+            MESSAGE="### ✅ No Breaking Changes
+          This update is backward compatible."
           fi
+          {
+            echo "message<<$delimiter"
+            echo "$MESSAGE"
+            echo "$delimiter"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Generate branch name
         id: branch-name
@@ -115,7 +136,7 @@ jobs:
 
             Automated sync of design tokens (variables) from Figma.
 
-            ${{ steps.breaking-changes.outputs.has_breaking == 'true' && format('### ⚠️ BREAKING CHANGES DETECTED\n\n**Breaking Changes Found:** {0}\n\nThis PR contains breaking changes that may require updates in the codebase. Please review carefully before merging.\n\n', steps.breaking-changes.outputs.breaking_count) || '### ✅ No Breaking Changes — this update is backward compatible.' }}
+            ${{ steps.breaking-changes.outputs.message }}
 
             **Diff Report Available:** See `tokens/diff-latest.json` for detail.
 
