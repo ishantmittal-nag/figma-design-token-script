@@ -6,11 +6,65 @@ one against the codebase (via Code Connect and/or a manual mapping), diffs
 it against the previous run, and flags anything that looks like a breaking
 change (a component removed or renamed).
 
-This branch (`figma-components-sync`) is **intentionally isolated** — it
-holds only what's needed to run the sync. It does not contain the
-application source; `src/` is pulled in transiently at CI time (see
-[How CI runs it](#how-ci-runs-it)) purely so Code Connect has something to
-parse.
+This branch (`components-sync`) is **intentionally isolated** — it holds
+only what's needed to run the sync, nothing from any other pipeline. It
+does not contain the application source; `src/` is pulled in transiently at
+CI time (see [How CI runs it](#how-ci-runs-it)) purely so Code Connect has
+something to parse.
+
+## Requirements
+
+### Runtime
+
+- **Node.js 20** (pinned in the workflow; use the same locally for
+  consistent behavior).
+- **npm packages** (`package.json`):
+  - [`dotenv`](https://www.npmjs.com/package/dotenv) — loads `FIGMA_TOKEN` /
+    `FIGMA_FILE_KEY` from a local `.env` file when running outside CI.
+  - [`@figma/code-connect`](https://www.npmjs.com/package/@figma/code-connect)
+    — its CLI (`figma connect parse`) is invoked directly by
+    `sync-figma-components.js` to cross-reference Figma components against
+    `*.figma.tsx` files. This is the only non-dev dependency the sync logic
+    itself depends on; installed via `npm ci` (needs `package-lock.json`,
+    already committed).
+
+### Figma access
+
+- A **Figma personal access token** (`FIGMA_TOKEN`), belonging to an
+  account that has at least **viewer access to the target Figma file**.
+- The token needs **read access to file content** — the script calls
+  `GET /v1/files/:key/components`, Figma's read-only Components API. No
+  write scope is needed anywhere in this pipeline; it never modifies
+  anything in Figma.
+- The **file must have published components** (a team library file with at
+  least one published component/component set) — an unpublished file
+  returns an empty component list, which isn't an error, just nothing to
+  sync.
+- `figma connect parse` (the Code Connect cross-reference step) is **local
+  file parsing only** — it reads `*.figma.tsx` files from disk and does not
+  itself call the Figma API, despite `FIGMA_TOKEN` being passed through to
+  it as `FIGMA_ACCESS_TOKEN` for compatibility with future Code Connect CLI
+  features that might need it.
+
+### GitHub / repo permissions
+
+- **Actions must be enabled** for the repository.
+- The workflow declares `permissions: contents: write` at the job level —
+  this is what lets the "Commit and push updated components data" step push
+  back to `components-sync` using the default, automatically-provided
+  `GITHUB_TOKEN` (via `actions/checkout`'s persisted credentials). No
+  personal access token or deploy key is needed for that push.
+- **Branch protection**: if `components-sync` ever gets required-review or
+  required-status-check rules applied to it, the bot's direct `git push`
+  in that step will start failing — either exclude this branch from
+  protection, or allow the Actions bot/`github-actions[bot]` to bypass it.
+- **Repo Variables/Secrets**: whoever sets `FIGMA_TOKEN` (secret) or
+  `FIGMA_FILE_KEY` / `FIGMA_API_BASE_URL` (Variables) needs at least
+  **Maintain** (ideally Admin) access to the repo's Settings →
+  *Secrets and variables → Actions* page.
+- **`gh` CLI / API access**, only if triggering runs via `gh workflow run`
+  instead of the Actions UI button — needs a token with the `workflow`
+  scope (see [Triggering manually](#triggering-manually) below).
 
 ## How it works
 
@@ -83,18 +137,19 @@ in this order:
 
 | Name | Type | Required | Notes |
 |---|---|---|---|
-| `FIGMA_TOKEN` | GitHub **secret** | Yes | The only real credential — a Figma personal access token. |
+| `FIGMA_TOKEN` | GitHub **secret** | Yes | The only real credential — a Figma personal access token. See [Figma access](#figma-access) above for the scope/access it needs. |
 | `FIGMA_FILE_KEY` | GitHub **Variable** (preferred) | Yes | Which Figma file to sync. Not sensitive — just an identifier — so it lives in Settings → Secrets and variables → Actions → **Variables**, not Secrets. `secrets.FIGMA_FILE_KEY` is still read as a fallback for repos that haven't migrated yet; once the Variable is set, the old secret can be deleted. |
 | `FIGMA_API_BASE_URL` | GitHub Variable (optional) | No | Defaults to `https://api.figma.com/v1` (from `config.json`). Set this only for a non-standard Figma API host (e.g. an enterprise instance). |
 
 Locally, these can also go in a `.env` file (loaded via `dotenv`) instead of
-the shell environment.
+the shell environment — copy `.env.example` to `.env` and fill in real
+values.
 
 ### Changing config without editing code
 
-- **Per-run override**: trigger the workflow manually (Actions tab → *Sync
-  Figma Components* → *Run workflow*) and fill in `figma_file_key` /
-  `figma_api_base_url` — these win over the repo Variables for that run
+- **Per-run override**: trigger the workflow manually (see
+  [Triggering manually](#triggering-manually)) and fill in `figma_file_key`
+  / `figma_api_base_url` — these win over the repo Variables for that run
   only.
 - **Persistent default**: set the `FIGMA_FILE_KEY` / `FIGMA_API_BASE_URL`
   repo Variables once (Settings → Secrets and variables → Actions →
@@ -105,17 +160,43 @@ the shell environment.
 Workflow: [`.github/workflows/sync-figma-components.yml`](.github/workflows/sync-figma-components.yml)
 
 Triggers:
-- **`workflow_dispatch`** — manual run from the Actions tab. Also accepts
-  `app_branch` (which branch to pull `src/` from for Code Connect — default
-  `main`).
-- **`push`** to `figma-components-sync` (excluding changes under
-  `components/`, to avoid the bot re-triggering itself on its own commits).
+- **`workflow_dispatch`** — manual run. Also accepts `app_branch` (which
+  branch to pull `src/` from for Code Connect — default `main`).
+- **`push`** to `components-sync` (excluding changes under `components/`,
+  to avoid the bot re-triggering itself on its own commits).
 - **`schedule`** (nightly, `0 0 * * *`) — dormant unless this workflow file
   also lives on the repo's default branch, since GitHub only fires
   `schedule` on the default branch. Kept here ready to go if that changes.
 
+### Triggering manually
+
+GitHub only shows the **"Run workflow"** button in the Actions UI for
+workflow files that exist on the repo's **default branch**. Since this
+workflow intentionally lives only on `components-sync`, that button won't
+appear until this file is also merged there — at which point it'll show up
+automatically, with a branch dropdown (pick `components-sync`, or leave
+whichever branch selected — the job's own checkout step hardcodes
+`ref: components-sync` regardless, so the sync always runs against this
+branch either way).
+
+Until then (or as an alternative any time), trigger it via the `gh` CLI or
+the REST API directly — this works regardless of which branch the file
+lives on:
+
+```bash
+gh workflow run sync-figma-components.yml --ref components-sync
+```
+
+```bash
+curl -X POST \
+  -H "Authorization: Bearer <token with 'workflow' scope>" \
+  -H "Accept: application/vnd.github+json" \
+  https://api.github.com/repos/<owner>/<repo>/actions/workflows/sync-figma-components.yml/dispatches \
+  -d '{"ref":"components-sync"}'
+```
+
 What the job does:
-1. Checks out `figma-components-sync`.
+1. Checks out `components-sync`.
 2. Sparse-checks-out just `src/` from `app_branch` (default `main`) into a
    temp path and stages it locally as `src/` — this repo doesn't track
    `src/` itself, it's pulled in only so Code Connect has real
@@ -148,9 +229,15 @@ FIGMA_TOKEN=... FIGMA_FILE_KEY=... npm run sync
 
 ## Troubleshooting
 
+- **No "Run workflow" button in the Actions UI** — see
+  [Triggering manually](#triggering-manually); it's a GitHub UI limitation
+  for workflow files not on the default branch, not a bug in this pipeline.
 - **"Missing FIGMA_TOKEN or FIGMA_FILE_KEY in environment"** — the env var
   *names* come from `config.json`'s `environment` block; check those match
   what's actually set (locally or as CI secrets/Variables).
+- **Figma API request failed: 403/404** — usually the token's account
+  doesn't have access to the file, or `FIGMA_FILE_KEY` points at the wrong
+  file. See [Figma access](#figma-access).
 - **Everything reports `mappingSource: "unmapped"`** — Code Connect found no
   `*.figma.tsx` files. In CI this usually means `app_branch` doesn't have a
   `src/` directory, or the branch input pointed at the wrong branch. Check
@@ -159,3 +246,7 @@ FIGMA_TOKEN=... FIGMA_FILE_KEY=... npm run sync
   `unmapped` instead** — Code Connect resolves through the *component set's*
   node id for variants, not the variant's own node id. Confirm the
   `figma.connect(...)` call targets the set's node URL, not one variant's.
+- **"Commit and push" step fails with a non-fast-forward/permission error**
+  — either another run pushed in the same window (harmless race, just
+  re-run), or branch protection on `components-sync` is blocking the bot's
+  push (see [GitHub / repo permissions](#github--repo-permissions)).

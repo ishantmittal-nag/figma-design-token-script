@@ -1,8 +1,12 @@
 name: Sync Figma Components
 
-# This branch is intentionally isolated: it holds only the files needed to
-# run sync-figma-components.js. Trigger it manually from the Actions tab
-# (pick this branch), or via `git push` to this branch.
+# This branch (components-sync) is intentionally isolated: it holds only
+# the files needed to run sync-figma-components.js - no application code,
+# no unrelated pipelines. Trigger it manually from the Actions tab (only
+# shows a "Run workflow" button once this file also exists on the repo's
+# default branch - see README.md's Troubleshooting section), or via
+# `gh workflow run sync-figma-components.yml --ref components-sync`, or via
+# `git push` to this branch.
 #
 # Note: GitHub only fires `schedule` triggers on the repository's default
 # branch, so the cron below stays dormant unless this workflow file also
@@ -23,7 +27,7 @@ on:
         required: false
   push:
     branches:
-      - figma-components-sync
+      - components-sync
     paths-ignore:
       - "components/**"
   schedule:
@@ -40,7 +44,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: figma-components-sync
+          ref: components-sync
 
       # Code Connect cross-referencing (getCodeConnectMap in
       # sync-figma-components.js) only finds anything if *.figma.tsx files
@@ -113,7 +117,7 @@ jobs:
             echo "committed=false" >> "$GITHUB_OUTPUT"
           else
             git commit -m "chore: sync design components from Figma"
-            git push origin HEAD:figma-components-sync
+            git push origin HEAD:components-sync
             echo "committed=true" >> "$GITHUB_OUTPUT"
           fi
 
