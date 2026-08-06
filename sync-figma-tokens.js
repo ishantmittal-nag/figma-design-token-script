@@ -2,86 +2,44 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
+import { loadTokensConfig } from "./config.js";
 
 dotenv.config();
 
 // ==================================================
-// Script-relative Paths
+// Configuration
 // ==================================================
-// Resolve everything relative to this file's own location rather than
-// process.cwd(), so behavior doesn't change based on the directory a
-// CI/CD pipeline (or a developer) happens to invoke `node` from.
+// See config.js - reads config.json plus the required env vars and resolves
+// every path relative to this script's directory. Loaded eagerly here (not
+// inside main()) so every function below can keep referencing these as
+// plain module-level constants, same as before the config load moved out.
 
-const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
-
-function resolveFromScript(relativePath) {
-    return path.resolve(SCRIPT_DIR, relativePath);
-}
-
-// ==================================================
-// Load Configuration
-// ==================================================
-
-let config;
+let CFG;
 
 try {
-    const configPath = resolveFromScript("config.json");
-    const configData = fs.readFileSync(
-        configPath,
-        "utf-8"
-    );
-    config = JSON.parse(configData);
+    CFG = loadTokensConfig();
 } catch (error) {
-    console.error(
-        "Failed to load config.json:",
-        error.message
-    );
+    console.error("Failed to load configuration:", error.message);
     process.exit(1);
 }
 
-// ==================================================
-// Environment Variables
-// ==================================================
-
-const FIGMA_TOKEN = process.env[
-    config.environment.figmaTokenVar
-]?.trim();
-
-const FIGMA_FILE_KEY = process.env[
-    config.environment.figmaFileKeyVar
-]?.trim();
-
-// ==================================================
-// Configuration from config.json
-// ==================================================
-
-const OUTPUT_DIR = resolveFromScript(config.paths.outputDir);
-const SNAPSHOT_DIR = resolveFromScript(config.paths.snapshotDir);
-const LATEST_JSON = resolveFromScript(config.paths.latestJsonFile);
-const LATEST_CSS_DIR = resolveFromScript(config.paths.latestCssDir);
-
-const API_BASE_URL = config.figma.apiBaseUrl;
-
-const UNITS_CONFIG = config.css?.units || {};
-const SCOPE_CATEGORY_MAP = config.css?.scopeCategoryMap || {};
-const CSS_CATEGORIES = config.css?.categories || ["other"];
-
-// ==================================================
-// Validate Environment
-// ==================================================
-
-if (!FIGMA_TOKEN || !FIGMA_FILE_KEY) {
-    console.error(
-        `Missing ${config.environment.figmaTokenVar} or ${config.environment.figmaFileKeyVar} in environment`
-    );
-    process.exit(1);
-}
+const {
+    OUTPUT_DIR,
+    SNAPSHOT_DIR,
+    LATEST_JSON,
+    FIGMA_TOKEN,
+    FIGMA_FILE_KEY,
+    API_BASE_URL,
+    UNITS_CONFIG,
+    SCOPE_CATEGORY_MAP,
+    CSS_CATEGORIES
+} = CFG;
 
 // ==================================================
 // Utility Functions
 // ==================================================
 
-function toKebabCase(value) {
+export function toKebabCase(value) {
     return value
         .trim()
         .replace(/([a-z])([A-Z])/g, "$1-$2")
@@ -147,7 +105,7 @@ async function getFigmaFileVersion() {
 // Convert Figma Color to CSS
 // ==================================================
 
-function figmaColorToCSS(color) {
+export function figmaColorToCSS(color) {
     if (!color || typeof color !== "object") {
         return "transparent";
     }
@@ -184,7 +142,7 @@ function resolveUnit(category) {
 // --target is defined for whichever mode/theme is active in the cascade
 // at the point of use.
 
-function isVariableAlias(value) {
+export function isVariableAlias(value) {
     return Boolean(value) && typeof value === "object" && value.type === "VARIABLE_ALIAS";
 }
 
@@ -200,7 +158,7 @@ function resolveAliasCssName(value, variables) {
 // Convert Figma Variable Value to CSS
 // ==================================================
 
-function convertValue(value, resolvedType, category, variables) {
+export function convertValue(value, resolvedType, category, variables) {
     // Variable alias (references another variable rather than holding
     // a literal) - resolved before any type-specific handling below,
     // since an alias can appear regardless of the variable's own
@@ -263,7 +221,7 @@ function getCategoryFromScopes(variable) {
     return null;
 }
 
-function getCategory(variable) {
+export function getCategory(variable) {
     const scopeCategory = getCategoryFromScopes(variable);
     if (scopeCategory) {
         return scopeCategory;
@@ -561,7 +519,7 @@ function loadSnapshot(filePath) {
     return JSON.parse(data);
 }
 
-function generateDiffReport(previousSnapshot, currentSnapshot) {
+export function generateDiffReport(previousSnapshot, currentSnapshot) {
     const previousVars = previousSnapshot.variables || {};
     const currentVars = currentSnapshot.variables || {};
 
@@ -657,7 +615,7 @@ function generateDiffReport(previousSnapshot, currentSnapshot) {
     };
 }
 
-function detectBreakingChanges(diff) {
+export function detectBreakingChanges(diff) {
     const breakingChanges = [];
 
     if (diff.removed.length > 0) {
@@ -810,5 +768,10 @@ async function main() {
 // ==================================================
 // Execute
 // ==================================================
+// Only run automatically when this file is the process entry point (`node
+// sync-figma-tokens.js`) - not when it's imported, e.g. by a test file that
+// just wants the exported pure functions above.
 
-main();
+if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url))) {
+    main();
+}
