@@ -124,7 +124,7 @@ jobs:
         if: steps.check-changes.outputs.has_changes == 'true'
         run: |
           TIMESTAMP=$(date +'%Y%m%d-%H%M%S')
-          echo "branch_name=components-sync/${TIMESTAMP}" >> "$GITHUB_OUTPUT"
+          echo "branch_name=sync-components/${TIMESTAMP}" >> "$GITHUB_OUTPUT"
 
       - name: Create Pull Request
         if: steps.check-changes.outputs.has_changes == 'true'
