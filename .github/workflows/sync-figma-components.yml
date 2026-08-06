@@ -137,7 +137,7 @@ jobs:
 
             Automated sync of published components from Figma.
 
-            ${{ steps.breaking-changes.outputs.has_breaking == 'true' && format('### ⚠️ BREAKING CHANGES DETECTED\n\n**Breaking Changes Found:** {0}\n\nThis PR contains breaking changes that may require updates in the codebase. Please review carefully before merging.\n\n', steps.breaking-changes.outputs.breaking_count) || '### ✅ No Breaking Changes\nThis update is backward compatible.' }}
+            ${{ steps.breaking-changes.outputs.has_breaking == 'true' && format('### ⚠️ BREAKING CHANGES DETECTED\n\n**Breaking Changes Found:** {0}\n\nThis PR contains breaking changes that may require updates in the codebase. Please review carefully before merging.\n\n', steps.breaking-changes.outputs.breaking_count) || '### ✅ No Breaking Changes — this update is backward compatible.' }}
 
             **Diff Report Available:** See `components/diff-latest.json` for detail.
 
