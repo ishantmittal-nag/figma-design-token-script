@@ -1,16 +1,34 @@
-# React + Vite
+# Figma Design Sync
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Syncs Figma design tokens (variables) and published components into this
+repository, flags breaking changes, and opens a PR for review. This repo
+contains only the sync pipeline itself - no application code.
 
-Currently, two official plugins are available:
+Start with [`SETUP.md`](SETUP.md) for prerequisites, credentials, and how
+the three GitHub Actions workflows work. For pipeline-specific detail
+(architecture, mapping/category rules, troubleshooting), see
+[`docs/components-sync.md`](docs/components-sync.md) and
+[`docs/tokens-sync.md`](docs/tokens-sync.md).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Quick start
 
-## React Compiler
+```bash
+npm install
+cp .env.example .env   # fill in FIGMA_TOKEN and FIGMA_FILE_KEY
+npm run sync:tokens
+npm run sync:components
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## What's in here
 
-## Expanding the ESLint configuration
+| Path | What it is |
+|---|---|
+| `sync-figma-tokens.js`, `sync-figma-components.js` | The two sync scripts |
+| `config.js`, `config.json` | Shared config loading + pipeline settings |
+| `tokens/`, `components/` | Generated output (committed - this is the point of the sync) |
+| `.github/workflows/` | Three workflows: combined (`design-sync.yml`), and one dedicated workflow per pipeline |
+| `docs/`, `SETUP.md` | KT / operational documentation |
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+If you're looking for the application these tokens/components feed into,
+that lives in a separate repository - this one only produces the synced
+data and generated CSS.

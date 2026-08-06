@@ -1,9 +1,12 @@
 # Design Sync — Setup & Operation Guide
 
-This repo automatically syncs Figma design tokens (variables) and published
-components into this codebase, flags breaking changes, and opens a PR for
-review. This doc covers what needs to be in place to run it, both locally
-and via the scheduled GitHub Action.
+This repo contains only the sync pipeline itself - no application code. It
+automatically syncs Figma design tokens (variables) and published
+components into `tokens/`/`components/` here, flags breaking changes, and
+opens a PR for review. Whatever application actually consumes these tokens
+and components lives in a separate repository. This doc covers what needs
+to be in place to run the sync, both locally and via the scheduled GitHub
+Action.
 
 ## What runs
 
@@ -38,11 +41,10 @@ to each) - this doc stays the shared overview.
 
 ## 1. Prerequisites
 
-- Node 18+ (the CI workflow pins `node-version: 18`; anything newer works
-  too - this was developed and tested against Node 24 locally).
-- `npm install` at the repo root. This also pulls in `@figma/code-connect`
-  (used only for the local Code Connect cross-referencing step below, not
-  for the app itself).
+- Node 18+ (`design-sync.yml` pins `node-version: 18`, the two dedicated
+  workflows pin `20`; anything 18+ works locally too).
+- `npm install` at the repo root - just `dotenv` and `@figma/code-connect`,
+  the only two things either script needs.
 
 ## 2. Figma credentials
 
@@ -90,20 +92,32 @@ that's intentional and is how the CI workflow decides whether to flag a PR.
   falling back to name-based guessing, since scopes reflect how a variable
   is actually used in Figma regardless of naming.
 - `components.codeConnectDir` - directory the Code Connect CLI parses for
-  `*.figma.tsx` files (see below). Defaults to `./src`.
+  `*.figma.tsx` files (see below). Defaults to `./src`, which **does not
+  exist in this repo** - the application source (and any `*.figma.tsx`
+  files) lives in a separate repository. Code Connect cross-referencing is
+  effectively a no-op here unless `codeConnectDir` is pointed at a
+  directory that's actually present (e.g. a sparse-checkout of the app repo
+  staged before the sync runs, the way the old isolated `components-sync`
+  branch used to do it) or `*.figma.tsx` files are otherwise made available
+  locally.
 - `components.componentMap` - manual fallback map from an exact Figma
-  component name to its file path in this repo, for components that don't
-  have a Code Connect mapping yet:
+  component name to a code location string (a file path, a URL to the
+  source in the app's repo, or whatever's useful for a reviewer), for
+  components that don't have a Code Connect mapping:
 
   ```json
   "componentMap": {
-    "Button / Primary": "src/components/atoms/PrimaryButton.jsx"
+    "Button / Primary": "https://github.com/<org>/<app-repo>/blob/main/src/components/atoms/PrimaryButton.jsx"
   }
   ```
 
   Code Connect always wins when both exist for the same component (it's
   tied to the exact node, so it survives a Figma-side rename); this map is
-  the fallback for everything else.
+  the fallback for everything else. **Given Code Connect has nothing to
+  parse in this repo by default, `componentMap` is the primary way to get
+  components linked to a code location in the PR body** - see
+  [`docs/components-sync.md`](docs/components-sync.md) for the full mapping
+  precedence.
 
 ## 5. Components: publishing + Code Connect
 
@@ -111,12 +125,13 @@ The components script only sees components that have actually been
 **published to a team library** in Figma - `Found 0 published component(s)`
 means nothing's been published yet, not that something's broken.
 
-To get a component's changes linked to a source file in the PR body, either:
+To get a component's changes linked to a source location in the PR body:
 
-- **Add it to `componentMap`** above (no extra tooling, works immediately), or
+- **Add it to `componentMap`** above (works immediately, no extra tooling -
+  the practical default here since this repo has no app source of its own), or
 - **Adopt Code Connect** (requires a Figma Organization/Enterprise plan +
-  Dev Mode seat): create `YourComponent.figma.tsx` next to the real
-  component, e.g.:
+  Dev Mode seat) in the *application's* repository, alongside the real
+  component:
 
   ```tsx
   import figma from "@figma/code-connect";
@@ -130,12 +145,10 @@ To get a component's changes linked to a source file in the PR body, either:
   });
   ```
 
-  `sync-figma-components.js` runs `figma connect parse` locally on every
-  sync (no publish needed for our purposes) to build this mapping
-  automatically - nothing else to wire up. Running `npx figma connect
-  publish` separately is what makes the snippet show up in Figma's own Dev
-  Mode panel, which is a nice bonus but not required for the PR flagging to
-  work.
+  For `sync-figma-components.js` to see those `*.figma.tsx` files, they
+  need to be available locally when it runs - point `codeConnectDir` at a
+  checkout of the app repo (or a subset of it) rather than relying on the
+  default `./src`.
 
 ## 6. Automated sync - three workflows
 
