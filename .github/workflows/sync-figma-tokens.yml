@@ -1,8 +1,12 @@
 name: Sync Figma Tokens
 
-# This branch is intentionally isolated: it holds only the files needed to
-# run sync-figma-tokens.js. Trigger it manually from the Actions tab (pick
-# this branch), or via `git push` to this branch.
+# This branch (tokens-sync) is intentionally isolated: it holds only the
+# files needed to run sync-figma-tokens.js - no application code, no
+# unrelated pipelines. Trigger it manually from the Actions tab (only shows
+# a "Run workflow" button once this file also exists on the repo's default
+# branch - see README.md's Troubleshooting section), or via
+# `gh workflow run sync-figma-tokens.yml --ref tokens-sync`, or via
+# `git push` to this branch.
 #
 # Note: GitHub only fires `schedule` triggers on the repository's default
 # branch, so the cron below stays dormant unless this workflow file also
@@ -10,9 +14,16 @@ name: Sync Figma Tokens
 # that ever changes; workflow_dispatch is the reliable way to run this today.
 on:
   workflow_dispatch:
+    inputs:
+      figma_file_key:
+        description: "Figma file key to sync (overrides the FIGMA_FILE_KEY repo variable for this run)"
+        required: false
+      figma_api_base_url:
+        description: "Figma API base URL (overrides the FIGMA_API_BASE_URL repo variable for this run; leave blank for the default Figma API)"
+        required: false
   push:
     branches:
-      - figma-tokens-sync
+      - tokens-sync
     paths-ignore:
       - "tokens/**"
   schedule:
@@ -29,7 +40,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: figma-tokens-sync
+          ref: tokens-sync
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -43,8 +54,18 @@ jobs:
       - name: Sync Figma tokens
         id: sync
         env:
+          # FIGMA_TOKEN is the only actual credential here, so it stays a
+          # secret. FIGMA_FILE_KEY and the API base URL are just config, not
+          # secrets - they come from repo Variables (Settings > Secrets and
+          # variables > Actions > Variables) so they can be changed from the
+          # GitHub UI without touching code, with a per-run override via the
+          # workflow_dispatch inputs above. secrets.FIGMA_FILE_KEY is a
+          # transitional fallback for repos that haven't added the
+          # FIGMA_FILE_KEY repo Variable yet - once it's set, add the
+          # Variable and this fallback (plus the old secret) can be removed.
           FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
-          FIGMA_FILE_KEY: ${{ secrets.FIGMA_FILE_KEY }}
+          FIGMA_FILE_KEY: ${{ inputs.figma_file_key || vars.FIGMA_FILE_KEY || secrets.FIGMA_FILE_KEY }}
+          FIGMA_API_BASE_URL: ${{ inputs.figma_api_base_url || vars.FIGMA_API_BASE_URL }}
           DOTENV_CONFIG_QUIET: "true"
         run: |
           set +e
@@ -64,7 +85,7 @@ jobs:
             echo "committed=false" >> "$GITHUB_OUTPUT"
           else
             git commit -m "chore: sync design tokens from Figma"
-            git push origin HEAD:figma-tokens-sync
+            git push origin HEAD:tokens-sync
             echo "committed=true" >> "$GITHUB_OUTPUT"
           fi
 
