@@ -9,10 +9,3 @@
   --stroke-2: 2px;
   --stroke-3: 3px;
 }
-
-[data-theme="mode-1"] {
-  --48: 48px;
-  --24: 24px;
-  --16: 16px;
-  --12: 12px;
-}
